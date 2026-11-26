@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;650;700;750&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/style.css?v=5">
+<link rel="stylesheet" href="static/style.css?v=6">
 </head>
 <body>
 
@@ -63,7 +63,11 @@
   </p>
   <p class="affils"><sup>1</sup>S-Lab, Nanyang Technological University</p>
   <p class="notes">&dagger; Corresponding author</p>
-
+    <div class="hero-video" id="video">
+      <video src="static/videos/leap-overview.mp4?v=9" poster="static/posters/leap-overview.jpg?v=9" controls playsinline preload="metadata"></video>
+      <div class="vmeta"><span>&#9654; 1:30 &middot; sound on</span><span>Robot clips sped up 4&ndash;8&times;, marked in each shot</span></div>
+    </div>
+  </div>
 </header>
 
 <div class="wide">
@@ -96,12 +100,6 @@
     <li><a href="#results"><strong>LEAP-Harness.</strong>
       <small>An agent harness for manipulation in the Lean-as-Policy manner: 73.8% on RoboDojo-Sim, 90.1% on RoboCasa365, 95.0% on LIBERO-PRO, and 13/15 on three real tabletop tasks.</small></a></li>
   </ol>
-</section>
-
-<section class="col" id="video">
-  <h2><span class="num">Video</span>LEAP in three minutes</h2>
-  <video src="static/videos/leap-overview.mp4?v=9" poster="static/posters/leap-overview.jpg?v=9" controls playsinline preload="none" style="border:1px solid var(--line)"></video>
-  <p class="tnote">Robot clips are sped up 4&ndash;8&times;; the speed is marked in each shot.</p>
 </section>
 
 <section class="wide" id="idea">
@@ -385,13 +383,13 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
   <p>The same library also drives a TianJi Marvin humanoid with two arms and multi-finger hands. In the first task both hands work together: to put the card box into the closed container, one hand lifts the lid and holds it clear of the opening, the other hand puts the card box inside while the lid stays held, and the hand holding the lid then puts it back. In the second task each hand places one object: a charger plug into the white basket, then the plush toy into the clear bowl. Both tasks are written as goals over existing laws, every step is checked before it runs, and the new robot enters only through its own profile and adapter.</p>
 </section>
 <div class="wide">
-  <figure style="margin-top:6px">
-    <video src="static/videos/marvin_leap.mp4" poster="static/posters/marvin_leap.jpg" controls muted playsinline preload="none" style="display:block;width:100%;max-width:860px;margin:0 auto;border:1px solid var(--rule)"></video>
-    <figcaption style="max-width:860px;margin:10px auto 0"><b>TianJi Marvin: lid, card box, container.</b> Lift the lid and hold it, put the card box inside, then close the container with the hand that holds the lid.</figcaption>
+  <figure class="sped" style="margin-top:6px">
+    <span class="speed">5&times;</span><video src="static/videos/marvin_leap.mp4" poster="static/posters/marvin_leap.jpg" controls muted playsinline preload="none" style="display:block;width:100%;max-width:860px;margin:0 auto;border:1px solid var(--rule)"></video>
+    <figcaption style="max-width:860px;margin:10px auto 0"><b>TianJi Marvin: lid, card box, container.</b> Lift the lid and hold it, put the card box inside, then close the container with the hand that holds the lid. 5&times; speed.</figcaption>
   </figure>
-  <figure style="margin-top:22px">
-    <video src="static/videos/marvin2_leap.mp4" poster="static/posters/marvin2_leap.jpg" controls muted playsinline preload="none" style="display:block;width:100%;max-width:860px;margin:0 auto;border:1px solid var(--rule)"></video>
-    <figcaption style="max-width:860px;margin:10px auto 0"><b>TianJi Marvin: basket and bowl.</b> One hand puts the charger plug into the white basket; the other puts the plush toy into the clear bowl.</figcaption>
+  <figure class="sped" style="margin-top:22px">
+    <span class="speed">5&times;</span><video src="static/videos/marvin2_leap.mp4" poster="static/posters/marvin2_leap.jpg" controls muted playsinline preload="none" style="display:block;width:100%;max-width:860px;margin:0 auto;border:1px solid var(--rule)"></video>
+    <figcaption style="max-width:860px;margin:10px auto 0"><b>TianJi Marvin: basket and bowl.</b> One hand puts the charger plug into the white basket; the other puts the plush toy into the clear bowl. 5&times; speed.</figcaption>
   </figure>
 </div>
 

@@ -262,3 +262,9 @@ code { font: 0.84em var(--mono); color: #bff7e6; background: rgba(125,242,207,.0
   .hero .bgc { grid-template-columns: repeat(2, 1fr); }
 }
 [id] { scroll-margin-top: 72px; }
+.hero-video { max-width: 960px; margin: 44px auto 0; text-align: left; }
+.hero-video video { border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 24px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(125,242,207,.08); }
+.hero-video .vmeta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font: 500 12px/1.4 var(--mono); color: var(--faint); letter-spacing: .04em; }
+.hero-video .vmeta span:first-child { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; }
+figure.sped { position: relative; max-width: 860px; margin-left: auto; margin-right: auto; }
+.speed { position: absolute; z-index: 2; top: 12px; left: 12px; font: 700 13px/1 var(--mono); color: var(--on-accent); background: var(--accent); padding: 6px 9px; border-radius: 999px; pointer-events: none; }
