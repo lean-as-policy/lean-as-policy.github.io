@@ -89,7 +89,7 @@
 
 <main>
 <section class="col" id="summary">
-  <p class="lede">A manipulation task such as picking up a mug admits many valid actions: the mug can be grasped by its handle or its rim and lifted along countless paths. Vision-language-action models, Code-as-Policies and human teleoperation each generate a single action, and whether it is valid is found only by running it on the robot. LEAP works in the opposite order: it first defines all valid actions, then chooses one.</p>
+  <p>A manipulation task such as picking up a mug admits many valid actions: the mug can be grasped by its handle or its rim and lifted along countless paths. Vision-language-action models, Code-as-Policies and human teleoperation each generate a single action, and whether it is valid is found only by running it on the robot. LEAP works in the opposite order: it first defines all valid actions, then chooses one.</p>
   <p>A language-model agent writes the feasible set of a task as a Lean&nbsp;4 action family over a shared library of physical laws, separating goal, physics and embodiment constraints from user preferences. An objective selects one member of the set, which is checked against the same specification before the robot moves, using exact interval arithmetic and, optionally, the Lean kernel. The check covers only what the family states.</p>
 
   <ol class="findings">
