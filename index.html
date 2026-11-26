@@ -120,7 +120,7 @@
     </div>
     <p>Quantities that perception cannot pin down, such as the position or mass of the mug, enter as intervals &Theta; rather than single numbers, and the robust set &#8497;<sub>rob</sub> holds for every scene they allow. Preferences such as speed or clearance stay out of the constraints and form a separate objective, so &#8497; stays as large as the task allows.</p>
     <figure class="frobfig">
-<svg class="frob" viewBox="0 0 660 252" role="img" aria-label="Robust feasible set: each scene allowed by perception gives its own feasible set; their intersection is the robust set. A candidate whose tolerance ball lies inside it is certified; another candidate valid only in one scene is not.">
+<svg class="frob" viewBox="0 0 660 252" role="img" aria-label="Robust feasible set: each scene allowed by perception gives its own feasible set; their intersection is the robust set. A candidate whose tolerance region lies inside it is certified; another candidate valid only in one scene is not.">
 <defs><clipPath id="c1"><ellipse cx="405.0" cy="114.0" rx="129.0" ry="69.0" transform="rotate(-8 405.0 114.0)"/></clipPath><clipPath id="c2"><ellipse cx="471.0" cy="123.0" rx="120.0" ry="63.0" transform="rotate(12 471.0 123.0)"/></clipPath></defs>
 <g font-family="Inter Tight,Helvetica,Arial,sans-serif" font-size="13">
 <text x="6.0" y="22.8" font-weight="700" fill="#edf1f6">(a) Beliefs</text>
@@ -143,12 +143,12 @@
 <text x="447.0" y="90.2" text-anchor="middle" fill="#7df2cf" font-size="15" font-weight="700"><tspan font-family="Georgia,serif" font-style="italic">&#8497;</tspan><tspan font-size="10" dy="4">rob</tspan></text>
 <circle cx="435.0" cy="126.0" r="15.600000000000001" fill="none" stroke="#7df2cf" stroke-dasharray="4 3"/><circle cx="435.0" cy="126.0" r="3.5" fill="#7df2cf"/>
 <path d="M445.8 132.0L486.0 208.8" stroke="#7df2cf"/>
-<text x="643.2" y="218.8" text-anchor="end" fill="#7df2cf" font-size="11.5"><tspan font-family="Georgia,serif" font-style="italic">q*</tspan>: whole ball <tspan font-family="Georgia,serif" font-style="italic">B<tspan font-size="8" dy="3">r</tspan></tspan><tspan dy="-3">(</tspan><tspan font-family="Georgia,serif" font-style="italic">q*</tspan>) in <tspan font-family="Georgia,serif" font-style="italic">&#8497;</tspan><tspan font-size="8" dy="3">rob</tspan><tspan dy="-3">, certified</tspan></text>
+<text x="643.2" y="218.8" text-anchor="end" fill="#7df2cf" font-size="11.5"><tspan font-family="Georgia,serif" font-style="italic">q*</tspan>: tolerance <tspan font-family="Georgia,serif" font-style="italic">B<tspan font-size="8" dy="3">r</tspan></tspan><tspan dy="-3">(</tspan><tspan font-family="Georgia,serif" font-style="italic">q*</tspan>) in <tspan font-family="Georgia,serif" font-style="italic">&#8497;</tspan><tspan font-size="8" dy="3">rob</tspan><tspan dy="-3">, certified</tspan></text>
 <circle cx="309.0" cy="132.0" r="15.600000000000001" fill="none" stroke="#9aa6b6" stroke-dasharray="4 3"/><circle cx="309.0" cy="132.0" r="3.5" fill="#9aa6b6"/>
 <path d="M306.0 147.6L288.0 213.0" stroke="#9aa6b6"/>
 <text x="234.0" y="218.8" fill="#9aa6b6" font-size="11.5"><tspan font-family="Georgia,serif" font-style="italic">q&#8242;</tspan>: fails in <tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3">2</tspan><tspan dy="-3"></tspan></text>
 </g></svg>
-      <figcaption><b>The robust feasible set.</b> (a) Perception leaves a set &Theta; of possible scenes; three are shown. (b) Each scene &theta; gives its own feasible set &#8497;(&theta;), and &#8497;<sub>rob</sub> is their intersection. A candidate is certified when the whole ball <i>B<sub>r</sub></i>(<i>q</i>) of actions the robot may actually execute lies inside &#8497;<sub>rob</sub>, as for <i>q</i>*; <i>q</i>&prime; is valid in scene &theta;<sub>1</sub> but fails if the true scene is &theta;<sub>2</sub>, so it can at most be chance-estimated.</figcaption>
+      <figcaption><b>The robust feasible set.</b> (a) Perception leaves a set &Theta; of possible scenes; three are shown. (b) Each scene &theta; gives its own feasible set &#8497;(&theta;), and &#8497;<sub>rob</sub> is their intersection. A candidate is certified when its tolerance region <i>B<sub>r</sub></i>(<i>q</i>), every action the robot may execute in place of <i>q</i>, lies inside &#8497;<sub>rob</sub>, as for <i>q</i>*; <i>q</i>&prime; is valid in scene &theta;<sub>1</sub> but fails if the true scene is &theta;<sub>2</sub>, so it can at most be chance-estimated. In our implementation, <i>r</i> bounds the end-effector position on each axis at the commanded points, or is built into the clearances of the robot profile; motion between commanded points is not covered.</figcaption>
     </figure>
   </div>
 </section>
@@ -158,7 +158,7 @@
 <section class="wide" id="pipeline">
   <div class="col" style="padding:0">
     <h2><span class="num">LEAP-Harness</span>Five modules, one of which uses a model</h2>
-    <p><b>Perception</b> segments the scene with SAM&nbsp;3 and recovers depth with Depth Anything&nbsp;3, recording how uncertain each measured quantity is. The <b>Lean Formalizer</b>, a language-model agent, states the beliefs and writes the action family. The <b>Solver</b> searches the family under the objective, the <b>Verifier</b> bounds every row over the realization radius and the belief box, optionally with a Lean kernel theorem, and the <b>Executor</b> runs the verified joint commands once. No tool accepts a joint target, and solver, verifier and executor read one compiled program, so the action that is solved, verified and executed is always the same one.</p>
+    <p><b>Perception</b> segments the scene with SAM&nbsp;3 and recovers depth with Depth Anything&nbsp;3, recording how uncertain each measured quantity is. The <b>Lean Formalizer</b>, a language-model agent, states the beliefs and writes the action family. The <b>Solver</b> searches the family under the objective, the <b>Verifier</b> bounds every row over the execution tolerance and the belief box, optionally with a Lean kernel theorem, and the <b>Executor</b> runs the verified joint commands once. No tool accepts a joint target, and solver, verifier and executor read one compiled program, so the action that is solved, verified and executed is always the same one.</p>
   </div>
   <figure>
     <img src="static/figures/harness.png" alt="The five modules of LEAP-Harness on a LIBERO-PRO episode: perception, Lean formalizer, solver, verifier and executor, with a recovery loop when no plan is admitted." loading="lazy">
