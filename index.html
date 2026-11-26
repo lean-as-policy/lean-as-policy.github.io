@@ -355,6 +355,17 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
   </figure>
 </div>
 
+<section class="col" id="marvin">
+  <h3>A second robot: TianJi Marvin humanoid arms</h3>
+  <p>The same library also drives a TianJi Marvin humanoid with two arms and multi-finger hands, on a task that needs both hands: put the card box into the closed container. The task is written as three goals over existing laws. One hand lifts the lid and holds it clear of the opening; the other hand puts the card box inside while the lid stays held; then the hand holding the lid puts it back. Every step is checked before it runs, and the new robot enters only through its own profile and adapter.</p>
+</section>
+<div class="wide">
+  <figure style="margin-top:6px">
+    <video src="static/videos/marvin_leap.mp4" poster="static/posters/marvin_leap.jpg" controls muted playsinline preload="none" style="display:block;width:100%;max-width:860px;margin:0 auto;border:1px solid var(--rule)"></video>
+    <figcaption style="max-width:860px;margin:10px auto 0"><b>TianJi Marvin: lid, card box, container.</b> Lift the lid and hold it, put the card box inside, then close the container with the hand that holds the lid.</figcaption>
+  </figure>
+</div>
+
 <hr>
 
 <section class="col" id="results">
