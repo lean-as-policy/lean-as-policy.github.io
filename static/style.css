@@ -29,6 +29,8 @@ h1 { font-weight: 600; font-size: 38px; line-height: 1.18; letter-spacing: -.01e
 .subtitle { font-size: 20px; color: var(--muted); margin: 0 0 28px; }
 .authors { font: 16px/1.7 var(--sans); margin: 0 0 6px; }
 .authors span { white-space: nowrap; margin-right: 12px; }
+.authors a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+.authors a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 .authors sup, .affils sup { font-size: 11px; color: var(--muted); margin-left: 1px; }
 .affils { font: 15px/1.6 var(--sans); color: var(--muted); margin: 0 0 4px; }
 .notes { font: 13px/1.6 var(--sans); color: var(--faint); margin: 0 0 22px; }
