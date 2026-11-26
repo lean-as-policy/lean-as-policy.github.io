@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LEAP: Lean as Policy for Verifiable Robot Control</title>
+<meta name="description" content="LEAP writes the feasible set of a manipulation task as a Lean 4 action family over a shared library of physical laws, lets an objective pick one member, and verifies it before the robot moves.">
+<meta property="og:title" content="LEAP: Lean as Policy for Verifiable Robot Control">
+<meta property="og:description" content="Define all valid actions in Lean, pick one, verify it, then run it once.">
+<meta property="og:image" content="static/figures/teaser.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+
+<header class="col">
+  <h1>LEAP: Lean as Policy for Verifiable Robot Control</h1>
+  <p class="subtitle">Define all valid actions in Lean, pick one, verify it, then run it once.</p>
+
+  <p class="authors">
+    <span>Weichen Fan<sup>1</sup></span>
+    <span>Kairui Hu<sup>1</sup></span>
+    <span>Haiwen Diao<sup>1</sup></span>
+    <span>Siyuan Hu<sup>1</sup></span>
+    <span>Ziyi Wang<sup>1</sup></span>
+    <span>Ziqi Huang<sup>1</sup></span>
+    <span>Ziwei Liu<sup>1,&dagger;</sup></span>
+  </p>
+  <p class="affils"><sup>1</sup>S-Lab, Nanyang Technological University</p>
+  <p class="notes">&dagger; Corresponding author</p>
+
+  <nav class="links" aria-label="Resources">
+    <span title="arXiv link will be added after release">Paper (arXiv soon)</span>
+    <span title="Code release in preparation">Code (soon)</span>
+    <a href="#video">Video</a>
+    <a href="#pipeline-demo">Pipeline demo</a>
+    <a href="#library">Lean library</a>
+    <a href="#bibtex">BibTeX</a>
+  </nav>
+</header>
+
+<div class="wide">
+  <div class="vgrid" id="teaser">
+    <figure>
+      <video src="static/videos/real1_leap.mp4" poster="static/posters/real1_leap.jpg" muted loop playsinline preload="none" data-autoplay></video>
+      <div class="vlabel"><b>Baseball.</b> Ball into the bowl, then the bowl onto the plate.</div>
+    </figure>
+    <figure>
+      <video src="static/videos/real2_leap.mp4" poster="static/posters/real2_leap.jpg" muted loop playsinline preload="none" data-autoplay></video>
+      <div class="vlabel"><b>Golf ball.</b> The second step moves the container of the first.</div>
+    </figure>
+    <figure>
+      <video src="static/videos/real3_leap.mp4" poster="static/posters/real3_leap.jpg" muted loop playsinline preload="none" data-autoplay></video>
+      <div class="vlabel"><b>Tennis ball.</b> LEAP-Harness on an AgileX PiPER arm; 4&times; speed.</div>
+    </figure>
+  </div>
+</div>
+
+<main>
+<section class="col" id="summary">
+  <p class="lede">A manipulation task such as picking up a mug admits many valid actions: the mug can be grasped by its handle or its rim and lifted along countless paths. Vision-language-action models, Code-as-Policies and human teleoperation each <em>generate a single action</em>, and whether it is valid is found only by running it on the robot. LEAP works in the opposite order: it first <em>defines all valid actions</em>, then chooses one.</p>
+  <p>A language-model agent writes the feasible set of a task as a Lean&nbsp;4 action family over a shared library of physical laws, separating goal, physics and embodiment constraints from user preferences. An objective selects one member of the set, which is checked against the same specification before the robot moves, using exact interval arithmetic and, optionally, the Lean kernel. The check covers only what the family states.</p>
+
+  <ol class="findings">
+    <li><a href="#idea"><strong>A Lean-defined action family.</strong>
+      <small>The feasible set of a task, written over a library of physical laws. Any candidate action, from any source, can be verified against it with an explicit scope.</small></a></li>
+    <li><a href="#pipeline-demo"><strong>A flexible sampler.</strong>
+      <small>Searches the family under any objective, estimated success or a user reward, and separates plans certified for every value perception allows from plans whose success is only estimated.</small></a></li>
+    <li><a href="#results"><strong>LEAP-Harness.</strong>
+      <small>An agent harness for manipulation in the Lean-as-Policy manner: 73.8% on RoboDojo-Sim, 90.1% on RoboCasa365, 95.0% on LIBERO-PRO, and 13/15 on three real tabletop tasks.</small></a></li>
+  </ol>
+</section>
+
+<section class="col" id="video">
+  <h2><span class="num">Video</span>LEAP in three minutes</h2>
+  <video src="static/videos/leap-overview.mp4?v=8" poster="static/posters/leap-overview.jpg?v=2" controls playsinline preload="none" style="border:1px solid var(--rule)"></video>
+  <p class="tnote">Robot clips are sped up 4&ndash;8&times;; the speed is marked in each shot.</p>
+</section>
+
+<section class="wide" id="idea">
+  <div class="col" style="padding:0">
+    <h2><span class="num">Idea</span>First define all valid actions, then choose one</h2>
+    <p>LEAP puts the feasible set at the top of the action hierarchy: <em>feasible set</em> &supe; <em>semantic command</em> &supe; <em>trajectory</em>. A command such as <code>grasp(mug, handle)</code> selects the subset reachable by one strategy, and a trajectory is a single member. Stating the set separates <em>which actions are acceptable</em>, a question that can be checked, from <em>which acceptable action to take</em>, an optimization the user controls.</p>
+  </div>
+  <figure>
+    <img src="static/figures/teaser.png" alt="Left: existing methods output a single trajectory that is checked only by running it. Right: LEAP states the feasible set in Lean, an objective picks one member, and the member is verified before it runs once on the robot." loading="lazy">
+    <figcaption><b>LEAP defines all valid actions, picks one, and verifies it before execution.</b> (a) VLA models, Code-as-Policies and human teleoperators each output one trajectory <i>q</i>(<i>t</i>). (b) LEAP &#9312; states the feasible set &#8497; in Lean as goal, physics and embodiment constraints; &#9313; lets an objective <i>J</i> select <i>q</i>* = argmin<sub><i>q</i>&isin;&#8497;</sub> <i>J</i>(<i>q</i>); &#9314; checks <i>q</i>* against all constraints of &#8497; before running it once on the robot.</figcaption>
+  </figure>
+  <div class="col" style="padding:0">
+    <div class="eq">&#8497;(&theta;) = { <i>q</i> &isin; &#119980; : <i>g<sub>i</sub></i>(<i>q</i>&prime;, &theta;) &ge; 0 &nbsp;&forall; <i>i</i> &isin; &#119970; &cup; &#119979; &cup; &#8496;, &nbsp;&forall; <i>q</i>&prime; &isin; <i>B<sub>r</sub></i>(<i>q</i>) }, &emsp; &#8497;<sub>rob</sub> = &#8898;<sub>&theta;&isin;&Theta;</sub> &#8497;(&theta;)</div>
+    <div class="rows3">
+      <div><span class="chip g">&#119970;</span><b>Goal rows</b> quote the instruction, e.g. the mug ends up lifted.</div>
+      <div><span class="chip p">&#119979;</span><b>Physics rows</b> come from library laws, e.g. the pinch holds the load, 2&mu;<i>N</i> &ge; <i>mg</i>.</div>
+      <div><span class="chip e">&#8496;</span><b>Embodiment rows</b> bound what the robot can execute: joint domains, rates, static moments.</div>
+    </div>
+    <p>Quantities that perception cannot pin down, such as the position or mass of the mug, enter as intervals &Theta; rather than single numbers, and the robust set &#8497;<sub>rob</sub> holds for every scene they allow. Preferences such as speed or clearance stay out of the constraints and form a separate objective, so &#8497; stays as large as the task allows.</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="wide" id="pipeline">
+  <div class="col" style="padding:0">
+    <h2><span class="num">LEAP-Harness</span>Five modules, one of which uses a model</h2>
+    <p><b>Perception</b> segments the scene with SAM&nbsp;3 and recovers depth with Depth Anything&nbsp;3, recording how uncertain each measured quantity is. The <b>Lean Formalizer</b>, a language-model agent, states the beliefs and writes the action family. The <b>Solver</b> searches the family under the objective, the <b>Verifier</b> bounds every row over the realization radius and the belief box, optionally with a Lean kernel theorem, and the <b>Executor</b> runs the verified joint commands once. No tool accepts a joint target, and solver, verifier and executor read one compiled program, so the action that is solved, verified and executed is always the same one.</p>
+  </div>
+  <figure>
+    <img src="static/figures/harness.png" alt="The five modules of LEAP-Harness on a LIBERO-PRO episode: perception, Lean formalizer, solver, verifier and executor, with a recovery loop when no plan is admitted." loading="lazy">
+    <figcaption><b>LEAP-Harness.</b> Tabs name the agent tools that invoke each module. The solver, verifier, and executor run offline on the same compiled constraints; without an admitted plan, the agent observes more or revises (dashed). Shown on a LIBERO-PRO episode with Depth Anything&nbsp;3 (Small) depth. &#8496;, &#119979;, &#119970;: embodiment, physics, and goal rows.</figcaption>
+  </figure>
+</section>
+
+<hr>
+
+<section class="col" id="pipeline-demo">
+  <h2><span class="num">Pipeline demo</span>From an instruction to a verified action</h2>
+  <p>Two recorded episodes, step by step. Pick a benchmark, then walk through the five steps; every number, Lean line and video comes from the episode&rsquo;s own record.</p>
+</section>
+<div class="wide">
+  <div class="demo" data-demo>
+    <div class="tabs"><button type="button" aria-selected="true">LIBERO-PRO &middot; Lean family</button><button type="button" aria-selected="false">RoboDojo-Sim &middot; LeapLib laws</button></div>
+    <div class="demo-pane">
+      <div class="demo-body">
+        <div class="demo-left">
+          <p class="instr"><b>LIBERO-PRO, object swap, task 1, seed 4 &middot; instruction</b>&ldquo;Pick the cream cheese and place it in the basket&rdquo;</p>
+          <video src="static/videos/libero_exec.mp4" poster="static/posters/libero_still.jpg" muted loop playsinline preload="none" controls></video><div class="vlabel"><b>Third execution of the admitted plan</b>, agentview and wrist; frames every 5 control ticks. The evaluator reports success at step 234.</div>
+        </div>
+        <div>
+          <div class="steps" role="tablist"><button type="button" role="tab"><span class="n">01</span>Observe</button><button type="button" role="tab"><span class="n">02</span>Formalize</button><button type="button" role="tab"><span class="n">03</span>Solve</button><button type="button" role="tab"><span class="n">04</span>Verify</button><button type="button" role="tab"><span class="n">05</span>Execute</button></div>
+          <div class="step-panel"><h4>01 &middot; Observe: beliefs with evidence</h4><p>SAM&nbsp;3 segments every object in the agentview and wrist images; depth turns each mask into a box. The agent decides which detection is which object and how wide each belief is. Nothing here is a joint target.</p><dl class="kv"><dt>cream_cheese.center</dt><dd>(&minus;0.115, &minus;0.237, 0.011) m, visible centre</dd><dt>object boxes</dt><dd>8: cream cheese, basket, basket interior, alphabet soup, butter, milk, orange juice, tomato sauce</dd><dt>physics.floor.z</dt><dd>derived from the cream-cheese box</dd><dt>evidence version</dt><dd>13; basket, milk, orange juice and tomato sauce re-estimated before the third plan</dd></dl><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div><div class="step-panel"><h4>02 &middot; Formalize: the action family in Lean</h4><p>The family the agent wrote and the harness executed, unabridged. It reads beliefs by name, declares a two-knot joint path, calls library laws (grasp, carried box, above-plane, keep-clear) and adds the goal row that quotes the instruction.</p><pre class="lean"><span class="k">import</span> Leap
+<span class="k">import</span> LeapRuntime
+<span class="k">open</span> Leap
+
+<span class="k">def</span> family (f : Fidelity) : Family := Family.build LeapRuntime.facts f <span class="s">&quot;cream_cheese_to_basket&quot;</span> <span class="k">do</span>
+  <span class="k">let</span> cream_cheese ← Geometry.box <span class="s">&quot;cream_cheese&quot;</span>
+  <span class="k">let</span> basket ← Geometry.box <span class="s">&quot;basket&quot;</span>
+  <span class="k">let</span> basket_interior ← Geometry.box <span class="s">&quot;basket_interior&quot;</span>
+  <span class="k">let</span> alphabet_soup ← Geometry.box <span class="s">&quot;alphabet_soup&quot;</span>
+  <span class="k">let</span> butter ← Geometry.box <span class="s">&quot;butter&quot;</span>
+  <span class="k">let</span> milk ← Geometry.box <span class="s">&quot;milk&quot;</span>
+  <span class="k">let</span> orange_juice ← Geometry.box <span class="s">&quot;orange_juice&quot;</span>
+  <span class="k">let</span> tomato_sauce ← Geometry.box <span class="s">&quot;tomato_sauce&quot;</span>
+  <span class="k">let</span> floorz ← belief <span class="s">&quot;physics.floor.z&quot;</span>
+  <span class="k">let</span> path ← jointPath 2
+  <span class="k">let</span> poses ← Kinematics.toolPoses path
+  <span class="k">let</span> p0 := Kinematics.pose poses 0
+  <span class="k">let</span> p1 := Kinematics.pose poses 1
+  <span class="k">let</span> p2 := Kinematics.pose poses 2
+  <span class="k">let</span> b2 ← GeometryMotion.carriedBox <span class="s">&quot;carry2&quot;</span> cream_cheese p1 p2 0.999 (knot := some 2)
+  <span class="k">let</span> av_p1_1 ← Ext.segmentPose path 1 1 2
+  <span class="k">let</span> av_p2_1 ← Ext.segmentPose path 2 1 2
+  <span class="k">let</span> av_c_cream_cheese_2_1 ← GeometryMotion.carriedBox <span class="s">&quot;avc.cream_cheese.2.1&quot;</span> cream_cheese p1 av_p2_1 0.9985 (knot := some 2)
+  <span class="k">let</span> av_c_cream_cheese_2_2 ← GeometryMotion.carriedBox <span class="s">&quot;avc.cream_cheese.2.2&quot;</span> cream_cheese p1 p2 0.9985 (knot := some 2)
+  GeometryMotion.grasp <span class="s">&quot;grasp&quot;</span> p1 p0 cream_cheese 0.9993 (engage := (millimeters 1)) (support := floorz) (knot := some 1)
+  Geometry.abovePlane <span class="s">&quot;rim&quot;</span> b2.bottom basket.top (gap := (millimeters 10)) (knot := some 2)
+  Task.placedIn <span class="s">&quot;g1&quot;</span> <span class="s">&quot;place it in the basket&quot;</span> b2 basket_interior (knot := some 2)
+  Ext.keepsClearBall <span class="s">&quot;av.alphabet_soup.t.1.1&quot;</span> av_p1_1 alphabet_soup (millimeters 3) (knot := some 1)
+  Ext.keepsClearBall <span class="s">&quot;av.alphabet_soup.t.1.2&quot;</span> p1 alphabet_soup (millimeters 3) (knot := some 1)
+  Ext.keepsClearBall <span class="s">&quot;av.alphabet_soup.t.2.1&quot;</span> av_p2_1 alphabet_soup (millimeters 3) (knot := some 2)
+  Ext.keepsClearBall <span class="s">&quot;av.alphabet_soup.t.2.2&quot;</span> p2 alphabet_soup (millimeters 3) (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.alphabet_soup.c-cream_cheese.2.1&quot;</span> av_c_cream_cheese_2_1 alphabet_soup 2 1 (millimeters 3) (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.alphabet_soup.c-cream_cheese.2.2&quot;</span> av_c_cream_cheese_2_2 alphabet_soup 2 1 (millimeters 3) (knot := some 2)
+  Ext.keepsClearBall <span class="s">&quot;av.basket.t.1.1&quot;</span> av_p1_1 basket (millimeters 3) (knot := some 1)
+  Ext.keepsClearBall <span class="s">&quot;av.basket.t.1.2&quot;</span> p1 basket (millimeters 3) (knot := some 1)
+  Ext.keepsClearBall <span class="s">&quot;av.basket.t.2.1&quot;</span> av_p2_1 basket (millimeters 3) (knot := some 2)
+  Ext.keepsClearBall <span class="s">&quot;av.basket.t.2.2&quot;</span> p2 basket (millimeters 3) (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.basket.c-cream_cheese.2.1&quot;</span> av_c_cream_cheese_2_1 basket 2 1 (millimeters 3) (knot := some 2)
+  Ext.keepsClearBall <span class="s">&quot;av.butter.t.1.1&quot;</span> av_p1_1 butter (millimeters 3) (knot := some 1)
+  Ext.keepsClearBall <span class="s">&quot;av.butter.t.1.2&quot;</span> p1 butter (millimeters 3) (knot := some 1)
+  Ext.keepsClearBall <span class="s">&quot;av.butter.t.2.1&quot;</span> av_p2_1 butter (millimeters 3) (knot := some 2)
+  Ext.keepsClearBall <span class="s">&quot;av.butter.t.2.2&quot;</span> p2 butter (millimeters 3) (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.butter.c-cream_cheese.2.1&quot;</span> av_c_cream_cheese_2_1 butter 2 1 (millimeters 3) (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.butter.c-cream_cheese.2.2&quot;</span> av_c_cream_cheese_2_2 butter 2 1 (millimeters 3) (knot := some 2)
+  Ext.keepsClearBall <span class="s">&quot;av.milk.t.1.2&quot;</span> p1 milk (millimeters 3) (knot := some 1)
+  Ext.keepsClearBall <span class="s">&quot;av.milk.t.2.2&quot;</span> p2 milk (millimeters 3) (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.milk.c-cream_cheese.2.2&quot;</span> av_c_cream_cheese_2_2 milk 2 1 (millimeters 3) (knot := some 2)
+  Ext.keepsClear <span class="s">&quot;av.orange_juice.t.1.1&quot;</span> av_p1_1 p0 orange_juice 0 1 (millimeters 2) 0.9985 (knot := some 1)
+  Ext.keepsClear <span class="s">&quot;av.orange_juice.t.1.2&quot;</span> p1 p0 orange_juice 0 1 (millimeters 2) 0.9985 (knot := some 1)
+  Ext.keepsClear <span class="s">&quot;av.orange_juice.t.2.1&quot;</span> av_p2_1 p0 orange_juice 0 1 (millimeters 2) 0.9985 (knot := some 2)
+  Ext.keepsClear <span class="s">&quot;av.orange_juice.t.2.2&quot;</span> p2 p0 orange_juice 0 1 (millimeters 2) 0.9985 (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.orange_juice.c-cream_cheese.2.1&quot;</span> av_c_cream_cheese_2_1 orange_juice 0 1 (millimeters 2) (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.orange_juice.c-cream_cheese.2.2&quot;</span> av_c_cream_cheese_2_2 orange_juice 0 1 (millimeters 2) (knot := some 2)
+  Ext.keepsClearBall <span class="s">&quot;av.tomato_sauce.t.1.1&quot;</span> av_p1_1 tomato_sauce (millimeters 3) (knot := some 1)
+  Ext.keepsClearBall <span class="s">&quot;av.tomato_sauce.t.1.2&quot;</span> p1 tomato_sauce (millimeters 3) (knot := some 1)
+  Ext.keepsClearBall <span class="s">&quot;av.tomato_sauce.t.2.1&quot;</span> av_p2_1 tomato_sauce (millimeters 3) (knot := some 2)
+  Ext.keepsClearBall <span class="s">&quot;av.tomato_sauce.t.2.2&quot;</span> p2 tomato_sauce (millimeters 3) (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.tomato_sauce.c-cream_cheese.2.1&quot;</span> av_c_cream_cheese_2_1 tomato_sauce 2 1 (millimeters 3) (knot := some 2)
+  Ext.boxKeepsClear <span class="s">&quot;av.tomato_sauce.c-cream_cheese.2.2&quot;</span> av_c_cream_cheese_2_2 tomato_sauce 2 1 (millimeters 3) (knot := some 2)
+  closeAt 1 <span class="s">&quot;cream_cheese&quot;</span>
+  releaseAt 2
+  MotionTiming.velocityCeilings
+  MotionTimingAllocation.episodeAllowance path</pre><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div><div class="step-panel"><h4>03 &middot; Solve: the sampler searches the family</h4><p>The objective is the estimated probability that every hard row holds. The search is local: it reduces row violation at the centre of the belief box, then raises the smallest margin. Over the episode the agent asked for a plan 11 times: 4 searches found no candidate, 3 fell below admission, and 1 family needed more control steps than remained.</p><dl class="kv"><dt>decisions</dt><dd>16: 14 joint coordinates + 2 tick counts</dd><dt>hard rows</dt><dd>97: 64 physics, 4 goal, 29 episode budget</dd><dt>starts / candidates / judged</dt><dd>33 / 59 / 3</dd><dt>row evaluations</dt><dd>41,993</dd><dt>belief samples</dt><dd>256</dd><dt>search time</dt><dd>50.8 s (whole solve 64.5 s)</dd></dl><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div><div class="step-panel"><h4>04 &middot; Verify: what the plan carries</h4><p>The belief box is too wide for a robust certificate, so the plan is <em>chance-estimated</em>: it is admitted because its estimate meets the episode's floor of 0.5. Lean evaluates the same family on the candidate and agrees with the exact integer check on all 97 rows; this is an evaluation, not a kernel proof.</p><div class="rowbars"><div class="r"><span>every hard row holds</span><div class="t"><i style="width:69%"></i></div><span class="v">176/256</span></div><div class="r"><span>Lean evaluation agrees</span><div class="t"><i style="width:100%"></i></div><span class="v">97/97</span></div><div class="r"><span>admission floor</span><div class="t"><i style="width:50%"></i></div><span class="v">0.50</span></div></div><p><span class="badge ok">chance-estimated &middot; admitted</span> &nbsp;<span class="badge p">0.69, Wilson 95% [0.63, 0.74]</span> &nbsp;<span class="badge bad">not robust: 9 rows</span></p><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div><div class="step-panel"><h4>05 &middot; Execute: the admitted plan, once</h4><p>The executor sends the bound joint commands, 199 control ticks within the 200 remaining. The first two plans stopped at a missed control gate (a joint stayed outside its 40&nbsp;&micro;rad tolerance), and the agent re-planned with re-estimated beliefs. The third plan completes all four commands; the evaluator reports success at step 234 of 280.</p><p class="tnote">Shown: one LIBERO-PRO episode from a diagnostic run of LEAP-Harness, recorded with its full session. Benchmark numbers are in the table below.</p><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-pane" hidden>
+      <div class="demo-body">
+        <div class="demo-left">
+          <p class="instr"><b>RoboDojo-Sim, classify_objects, layout 0, dual-arm ARX X5 &middot; instruction</b>&ldquo;Sort the objects by category into the three baskets&rdquo;</p>
+          <video src="static/videos/robodojo_exec.mp4" poster="static/posters/robodojo_still.jpg" muted loop playsinline preload="none" controls></video><div class="vlabel"><b>Head camera with both wrist cameras.</b> Dolls into the white basket, pens into the blue, watches into the red. Benchmark score 100.</div>
+        </div>
+        <div>
+          <div class="steps" role="tablist"><button type="button" role="tab"><span class="n">01</span>Observe</button><button type="button" role="tab"><span class="n">02</span>Formalize</button><button type="button" role="tab"><span class="n">03</span>Solve</button><button type="button" role="tab"><span class="n">04</span>Verify</button><button type="button" role="tab"><span class="n">05</span>Execute</button></div>
+          <div class="step-panel"><h4>01 &middot; Observe: point sets with a sensing bound</h4><p>Each detected object is kept as the observed point set itself, with a sensing bound &epsilon;. Laws read the point set directly, so a grasp is checked against what the cameras saw rather than against a fitted model.</p><dl class="kv"><dt>plush doll#1 centre</dt><dd>(&minus;0.277, &minus;0.111, 0.787) m</dd><dt>extent</dt><dd>10.4 &times; 8.7 &times; 3.5 cm, 1,311 points</dd><dt>sensing bound</dt><dd>&epsilon; = 10 mm (pad 4.8 mm)</dd><dt>top grasp, both arms</dt><dd>refuted by <code>width_fits</code></dd></dl><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div><div class="step-panel"><h4>02 &middot; Lean: laws decide every step</h4><p>In this run the agent writes Python cells that call library tools; every motion they propose is decided by laws of the shared <code>LeapLib</code>, each a Boolean check in Lean with a soundness theorem. Two of the laws used here:</p><pre class="lean"><span class="c">-- LeapLib/Kinematics.lean</span>
+/-- The arm reaches `target` within `tol` (every coordinate), within its joint limits, <span class="k">with</span> the tool&#x27;s approach axis
+inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
+<span class="k">def</span> reaches (c : Chain) (ts : List Q) (target : V3) (tol : Nat) (dir : V3) (cnum cden : Nat) : Bool :=
+  <span class="k">match</span> c.fk ts <span class="k">with</span>
+  | none =&gt; false
+  | some P =&gt;
+      c.limitsOk ts &amp;&amp; qNear P.p.x target.x tol &amp;&amp; qNear P.p.y target.y tol &amp;&amp; qNear P.p.z target.z tol &amp;&amp;
+        withinCone P.R.col2 (QV.ofV dir.x dir.y dir.z) cnum cden
+
+<span class="c">-- LeapLib/Laws.lean</span>
+/-- `Lmin` is a certified lower bound of `|u|` (`Lmin² ≤ |u|²`), so `extent ≤ aperture * Lmin` implies
+`extent / |u| ≤ aperture`: the object fits between the fingers when they close along `u`. -/
+<span class="k">def</span> widthFits (s : PointSet) (u : V3) (Lmin aperture : Nat) : Bool :=
+  !s.pts.isEmpty &amp;&amp; decide (0 &lt; Lmin) &amp;&amp; decide ((Lmin : Int) * Lmin ≤ norm2 u) &amp;&amp;
+    decide (upper s u + upper s (neg u) ≤ (aperture : Int) * Lmin)
+
+<span class="k">theorem</span> widthFits_sound (s : PointSet) (u : V3) (Lmin aperture : Nat)
+    (h : widthFits s u Lmin aperture = true) (x y : V3) (hx : Member s x) (hy : Member s y) :
+    dot u x - dot u y ≤ (aperture : Int) * Lmin := <span class="k">by</span>
+  simp only [widthFits, Bool.and_eq_true, decide_eq_true_eq] at h
+  have h1 := member_upper s u x hx
+  have h2 := member_upper s (neg u) y hy
+  rw [dot_neg] at h2; omega</pre><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div><div class="step-panel"><h4>03 &middot; Sample until a law admits</h4><p>Carrying an object over a basket, the first request is refused and the refusal names the law that failed. The agent then samples waypoints and approach directions until the laws admit a path.</p><dl class="kv"><dt>over the basket</dt><dd><span class="badge bad">refuted: over:reaches</span>, 1,043 ms</dd><dt>72 candidates, vertical approach</dt><dd>0 certified</dd><dt>24 candidates, tilted approach</dt><dd>16 certified</dd><dt>chosen</dt><dd>mid &rarr; over, approach (0, 0.5, &minus;0.87)</dd></dl><pre class="lean">cands = []
+<span class="k">for</span> x <span class="k">in</span> [-0.03, 0.0, -0.06]:
+  <span class="k">for</span> y <span class="k">in</span> [0.03, 0.06]:
+    <span class="k">for</span> z <span class="k">in</span> [0.86, 0.88, 0.90]:
+      <span class="k">for</span> clo <span class="k">in</span> [cl, [1,0,0], [0,1,0], None]:
+        v = robo.atomic(name=<span class="s">'plan_path'</span>, params={..., <span class="s">'execute'</span>: False})
+        <span class="k">if</span> v[<span class="s">'status'</span>] == <span class="s">'certified'</span>: cands.append(...)</pre><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div><div class="step-panel"><h4>04 &middot; Verify: certified before it moves</h4><p><code>plan_path</code> needs an inverse-kinematics witness for every pose and every segment above the table; the path runs only if every law holds.</p><div class="rowbars"><div class="r"><span>mid: reaches</span><div class="t"><i style="width:100%"></i></div><span class="v">holds</span></div><div class="r"><span>over: reaches</span><div class="t"><i style="width:100%"></i></div><span class="v">holds</span></div><div class="r"><span>segments above table</span><div class="t"><i style="width:100%"></i></div><span class="v">hold</span></div></div><pre class="lean">{"status": "certified", "failed": [], "refuting": [],
+ "waypoints": ["mid", "over"], "check_ms": 88.0, "executed": true,
+ "motions": [{"name": "mid", "err_mm": 1.3, "got_there": true},
+             {"name": "over", "err_mm": 1.4, "got_there": true}]}</pre><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div><div class="step-panel"><h4>05 &middot; Execute the certified path</h4><p>Certified paths run on the joint route with 0.2&ndash;1.8&nbsp;mm tracking error; Lean checks take 41&ndash;95&nbsp;ms each. The agent finishes with three dolls in the white basket, two pens in the blue and two watches in the red, and the benchmark scores the episode 100.</p><p class="tnote">Shown: one RoboDojo-Sim development episode with the <code>LeapLib</code> law tools, recorded with its agent transcript. The reported RoboDojo result (73.8%) is the official one-seed evaluation in the table below.</p><div class="nav2"><button type="button" data-prev>&larr; Back</button><button type="button" data-next>Next step &rarr;</button></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<hr>
+
+<section class="wide" id="library">
+  <div class="col" style="padding:0">
+    <h2><span class="num">Lean library</span>A LEGO-like library of physical laws</h2>
+    <p>Families are not written from scratch. Each one is a short Lean&nbsp;4 module that snaps together <b>law bricks</b> from a shared library: kinematics, geometry, contact, friction, dynamics and articulated mechanisms. A law is a Lean function that adds rows, names itself, and lists the premises under which its rows hold. Laws contain no numbers; masses, friction coefficients and tolerances enter as beliefs or as literals with units, and a row that mixes dimensions is rejected. Press a family to see which bricks it uses.</p>
+  </div>
+  <div class="lib">
+    <div class="bricks">
+        <div class="bgroup"><h5>Geometry</h5><div class="bl"><span class="brick" data-law="geom.point_in_box">geom.point_in_box</span><span class="brick" data-law="geom.box_in_box">geom.box_in_box</span><span class="brick" data-law="geom.above_plane">geom.above_plane</span><span class="brick" data-law="geom.distance">geom.distance</span><span class="brick" data-law="geom.axis_aligned">geom.axis_aligned</span><span class="brick" data-law="geom.segment_point">geom.segment_point</span></div></div>
+        <div class="bgroup"><h5>Kinematics &amp; time</h5><div class="bl"><span class="brick" data-law="kin.chain">kin.chain</span><span class="brick" data-law="time.episode_budget">time.episode_budget</span></div></div>
+        <div class="bgroup"><h5>Contact</h5><div class="bl"><span class="brick" data-law="contact.parallel_jaw">contact.parallel_jaw</span><span class="brick" data-law="contact.resting_surface">contact.resting_surface</span><span class="brick" data-law="contact.orientation_kept">contact.orientation_kept</span><span class="brick" data-law="contact.rigid_carry">contact.rigid_carry</span><span class="brick" data-law="contact.support">contact.support</span><span class="brick" data-law="contact.non_penetration">contact.non_penetration</span><span class="brick" data-law="contact.approach_from_above">contact.approach_from_above</span></div></div>
+        <div class="bgroup"><h5>Friction</h5><div class="bl"><span class="brick" data-law="friction.coulomb_pinch">friction.coulomb_pinch</span><span class="brick" data-law="friction.pinch_torque">friction.pinch_torque</span><span class="brick" data-law="friction.cone">friction.cone</span><span class="brick" data-law="friction.sliding">friction.sliding</span></div></div>
+        <div class="bgroup"><h5>Dynamics</h5><div class="bl"><span class="brick" data-law="dyn.free_fall">dyn.free_fall</span><span class="brick" data-law="dyn.joint_rate">dyn.joint_rate</span><span class="brick" data-law="dyn.newton_point">dyn.newton_point</span><span class="brick" data-law="dyn.static_moment">dyn.static_moment</span><span class="brick" data-law="dyn.work_energy">dyn.work_energy</span></div></div>
+        <div class="bgroup"><h5>Articulated mechanisms</h5><div class="bl"><span class="brick" data-law="task.revolute_handle">task.revolute_handle</span><span class="brick" data-law="task.prismatic_handle">task.prismatic_handle</span></div></div>
+    </div>
+    <div>
+      <div class="fams">
+        <button class="fam" type="button" data-uses="kin.chain friction.coulomb_pinch friction.pinch_torque"><b>Move a held block to a target</b><code>reach</code> &middot; one-knot planar arm; goal row, elbow embodiment row, pinch holds the weight</button>
+        <button class="fam" type="button" data-uses="kin.chain contact.orientation_kept geom.above_plane geom.distance contact.parallel_jaw contact.rigid_carry time.episode_budget"><b>Put the bowl on the plate</b><code>place_bowl</code> &middot; four knots: over the bowl, close, lift, carry over the plate, open</button>
+        <button class="fam" type="button" data-uses="kin.chain contact.orientation_kept contact.rigid_carry geom.above_plane"><b>Pick the cream cheese and place it in the basket</b><code>cream_cheese_to_basket</code> &middot; the LIBERO-PRO family of the pipeline demo, plus clearance rows for six other objects</button>
+      </div>
+      <pre class="lean" id="lawcode"><span class="c">-- Leap/Laws/Friction.lean, excerpt: one brick</span>
+<span class="k">def</span> pinchHolds (id : String) (mu normalForce mass : Expr)
+    (accel : Expr := gravity) ... : Build Unit := <span class="k">do</span>
+  uses <span class="s">"friction.coulomb_pinch/1"</span>
+    [<span class="s">"coefficient_nonnegative"</span>, <span class="s">"two_opposed_pads"</span>, <span class="s">"equal_pad_forces"</span>]
+  <span class="k">let</span> grip &larr; share (mu * normalForce)
+  <span class="k">let</span> load &larr; share (mass * accel)
+  require (id ++ <span class="s">":force"</span>) (2 * grip - load)
+    (law := <span class="s">"friction.coulomb_pinch/1"</span>)
+  <span class="c">-- slow fidelity adds the torque row 4&mu;NR &ge; 3ma&#8467;</span></pre>
+    </div>
+  </div>
+  <div class="col" style="padding:0">
+    <div class="stats">
+      <div><b>26</b>laws in the harness library</div>
+      <div><b>19</b>Lean files in the shared <code>LeapLib</code></div>
+      <div><b>112</b>theorems in <code>LeapLib</code></div>
+      <div><b>0</b>declared axioms (Lean 4.19.0)</div>
+    </div>
+    <h3>Extending it</h3>
+    <p><b>A new law</b> is one Lean function that adds its rows and premises; in <code>LeapLib</code> every law is a decidable check with a soundness theorem. <b>A new robot</b> is one file of kinematic chains, joint domains, gripper geometry and the source of each value; neither part names a robot or a benchmark. <b>A new benchmark</b> connects through the common world interface with an adapter, as RoboDojo, RoboCasa365 and LIBERO-PRO do. Adding a brick makes it available to every family and every robot at once.</p>
+    <p class="tnote">Writing a law or an adapter extends what LEAP can state; it does not by itself show that a new environment works. Each benchmark above was evaluated separately.</p>
+  </div>
+</section>
+
+
+<hr>
+
+<section class="wide" id="cup">
+  <div class="col" style="padding:0">
+    <h2><span class="num">Worked example</span>Picking up a glass cup, empty and with water</h2>
+    <p>The family states contact, friction (&mu; = 0.5, <i>N</i> &le; 15&nbsp;N) and the Newton&ndash;Euler equations of the cup and the arm, keeps the cup within 2&deg; of upright, and names no grasp type. For the empty cup, &#8497; contains rim, handle and side grasps. Water doubles the mass prior and only the mass belief changes: a rim pinch would now need a 26&nbsp;mm instead of a 13&nbsp;mm deep grip, so only the side grasp remains. Before the robot moves, the verifier rejects a rim pinch whose friction and Euler rows have negative lower bounds; the negative bounds name the rows that block certification.</p>
+  </div>
+  <figure>
+    <img src="static/figures/cup.png" alt="Picking up a glass cup: grasps on the robot, the Lean family, feasible regions for empty and full cup, and verifier bounds." loading="lazy">
+    <figcaption><b>Picking up a glass cup.</b> (a) On the robot: three operator-set grasps of the empty cup in &#8497;, LEAP's side grasp of the full cup, and the model acting directly. (b) The family, abridged; the two scenes differ only in the mass belief. (c) Under the empty-cup beliefs, &#8497; holds rim, handle, and side grasps. (d) With water, only the side grasp remains. (e) The verifier bounds every row over &Theta;: A is rejected, B is certified. A qualitative illustration, not an end-to-end verified execution; bar values are illustrative.</figcaption>
+  </figure>
+</section>
+
+<hr>
+
+<section class="col" id="real-world">
+  <h2><span class="num">Real robot</span>LEAP-Harness vs. GPT-6 Astra on the same three tasks</h2>
+  <p>Three tasks share a tabletop with a plate, a bowl and three balls: put the tennis ball, the baseball or the golf ball into the bowl, then the bowl on the plate, so the second step moves the container of the first. GPT-6 Astra outputs one end-effector target per model call, from embodiment information and all sensor inputs. Each pair below shows the same scene and instruction; only the policy differs.</p>
+</section>
+<div class="wide">
+  <div class="cmp" id="cmp">
+    <div class="cmp-head"><div></div><div class="who ours">LEAP-Harness</div><div class="who">GPT-6 Astra</div></div>
+    <div class="cmp-row">
+      <div class="cmp-lab"><b>Baseball</b><span>LEAP 4/5 &middot; Astra 0/5</span></div>
+      <figure><video src="static/videos/real1_leap.mp4" poster="static/posters/real1_leap.jpg" muted loop playsinline preload="none" data-autoplay data-sync="1"></video><div class="vlabel ok">&#10003; ball in bowl, bowl on plate</div></figure>
+      <figure><video src="static/videos/real1_astra.mp4" poster="static/posters/real1_astra.jpg" muted loop playsinline preload="none" data-autoplay data-sync="1"></video><div class="vlabel bad">&#10007; bowl never lifted with the baseball</div></figure>
+    </div>
+    <div class="cmp-row">
+      <div class="cmp-lab"><b>Golf ball</b><span>LEAP 4/5 &middot; Astra 2/5</span></div>
+      <figure><video src="static/videos/real2_leap.mp4" poster="static/posters/real2_leap.jpg" muted loop playsinline preload="none" data-autoplay data-sync="2"></video><div class="vlabel ok">&#10003; ball in bowl, bowl on plate</div></figure>
+      <figure><video src="static/videos/real2_astra.mp4" poster="static/posters/real2_astra.jpg" muted loop playsinline preload="none" data-autoplay data-sync="2"></video><div class="vlabel bad">&#10007; misses the golf ball, yet goes to the bowl</div></figure>
+    </div>
+    <div class="cmp-row">
+      <div class="cmp-lab"><b>Tennis ball</b><span>LEAP 5/5 &middot; Astra 3/5</span></div>
+      <figure><video src="static/videos/real3_leap.mp4" poster="static/posters/real3_leap.jpg" muted loop playsinline preload="none" data-autoplay data-sync="3"></video><div class="vlabel ok">&#10003; ball in bowl, bowl on plate</div></figure>
+      <figure><video src="static/videos/real3_astra.mp4" poster="static/posters/real3_astra.jpg" muted loop playsinline preload="none" data-autoplay data-sync="3"></video><div class="vlabel bad">&#10007; this rollout leaves the ball on the table</div></figure>
+    </div>
+  </div>
+  <p class="tnote" style="max-width:var(--col);margin:8px auto 0;padding:0 16px">All clips 4&times; speed. The Astra rollouts shown are failures; it succeeds on 5 of 15 rollouts overall.</p>
+</div>
+<section class="col" style="padding-top:0">
+  <div class="tablewrap">
+    <p class="tcap"><b>Real-robot results.</b> <em>Success</em>: completed rollouts, of five per task. <em>Judge</em>: recorded teleoperation trajectories judged correctly before they run, of ten per task, five of them successful.</p>
+    <table>
+      <thead>
+        <tr><th rowspan="2">Task</th><th colspan="2" class="c">Success</th><th colspan="2" class="c">Judge accuracy</th></tr>
+        <tr><th>GPT-6 Astra</th><th>LEAP</th><th>GPT-6 Astra</th><th>LEAP</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Tennis ball</td><td>3/5</td><td><b>5/5</b></td><td>1/10</td><td><b>10/10</b></td></tr>
+        <tr><td>Baseball</td><td>0/5</td><td><b>4/5</b></td><td>0/10</td><td><b>10/10</b></td></tr>
+        <tr><td>Golf ball</td><td>2/5</td><td><b>4/5</b></td><td>1/10</td><td><b>10/10</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A feasible set can also judge an action that another policy produced. Before each recorded trajectory runs, LEAP checks its joint states against the task's Lean family, and GPT-6 Astra judges from the same input. LEAP is right on all 30, GPT-6 Astra on 2.</p>
+</section>
+<div class="wide">
+  <figure style="margin-top:6px">
+    <img src="static/figures/real_rollout.png" alt="Trajectories to judge before execution for the three ball tasks." loading="lazy" style="max-width:720px;margin:0 auto">
+    <figcaption style="max-width:720px;margin:10px auto 0"><b>Trajectories to judge before execution.</b> Columns show the end of each step. Tennis ball: success; baseball: bowl not lifted; golf ball: grasp missed.</figcaption>
+  </figure>
+</div>
+
+<hr>
+
+<section class="col" id="results">
+  <h2><span class="num">Benchmarks</span>Simulation results</h2>
+  <p>LEAP receives what every entry receives and uses no learned policy. Baselines come from the public leaderboards and are not rerun; protocols are given under each table.</p>
+
+  <h3>RoboDojo-Sim</h3>
+  <div class="tablewrap">
+    <p class="tcap"><b>Success rate (%)</b> on 42 bimanual tasks of a dual-arm ARX X5 station. <em>Zero-shot</em>: built without RoboDojo demonstrations or episodes.</p>
+    <table>
+      <thead><tr><th>Method</th><th>Type</th><th class="c">Zero-shot</th><th>Overall</th><th>Gen. (12)</th><th>Prec. (8)</th><th>Long-Hor. (8)</th><th>Memory (6)</th><th>Open (8)</th></tr></thead>
+      <tbody>
+        <tr class="group"><td colspan="9">Learned policies</td></tr>
+        <tr><td>&pi;<sub>0.5</sub></td><td>VLA</td><td class="c dim">&times;</td><td>6.93</td><td>8.17</td><td>5.50</td><td>14.67</td><td>4.67</td><td>1.67</td></tr>
+        <tr><td>VPP2</td><td>WAM</td><td class="c dim">&times;</td><td>32.26</td><td>29.50</td><td>35.17</td><td>37.00</td><td>55.56</td><td>4.08</td></tr>
+        <tr><td>WALL-OSS-1.0-lite</td><td>VLA</td><td class="c dim">&times;</td><td>34.97</td><td>37.94</td><td>29.08</td><td>32.25</td><td>56.00</td><td>19.58</td></tr>
+        <tr class="group"><td colspan="9">Agent harnesses</td></tr>
+        <tr><td>GPT-6 Astra<sup>b</sup></td><td>Agent + EEF</td><td class="c">&#10003;</td><td>22.48</td><td>30.50</td><td>4.00</td><td>8.25</td><td>38.67</td><td>31.00</td></tr>
+        <tr><td>PhysicalRSI</td><td>Agent + VLA</td><td class="c dim">&times;</td><td>31.38</td><td>15.62</td><td>32.50</td><td>37.33</td><td>46.56</td><td>24.92</td></tr>
+        <tr><td>HexaShell-Preview</td><td>Agent + Code</td><td class="c dim">&times;</td><td>46.85</td><td>34.50</td><td>32.00</td><td>31.50</td><td>81.00</td><td>55.25</td></tr>
+        <tr><td>PyRUA-Lean<sup>a</sup></td><td>Agent + Code</td><td class="c">&#10003;</td><td>50.35</td><td>43.17</td><td>38.25</td><td>43.75</td><td>68.33</td><td>58.25</td></tr>
+        <tr><td>GO-3 Nano Preview</td><td>Agent + WAM</td><td class="c dim">?</td><td>56.42</td><td>33.66</td><td>76.00</td><td>53.50</td><td>63.67</td><td>55.25</td></tr>
+        <tr><td>Q0-Preview</td><td>Agent + Planner</td><td class="c">&#10003;</td><td>68.87</td><td>58.67</td><td>58.50</td><td>58.50</td><td><b>93.67</b></td><td><b>75.00</b></td></tr>
+        <tr><td>COAP<sup>c</sup></td><td>Agent + Code</td><td class="c dim">&times;</td><td>70.24</td><td>65.7</td><td>75.1</td><td>56.4</td><td>89.9</td><td>64.1</td></tr>
+        <tr class="ours sep"><td>LEAP (ours)</td><td>Agent + Lean</td><td class="c">&#10003;</td><td><b>73.8</b></td><td><b>72.5</b></td><td><b>78.8</b></td><td><b>61.3</b></td><td>91.7</td><td>70.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tnote">LEAP: one seed, 10 episodes per task (420 episodes), official client, judges and scoring; an abstention counts as a failure. With one seed the 95% interval is about &plusmn;4 points, so the lead over COAP is within noise. Baselines from the public leaderboard (Nov.&nbsp;3, 2026), not rerun. <sup>a</sup>Board evaluation; its paper reports 58.2 / 51.6. <sup>b</sup>One end-effector target per model call. <sup>c</sup>Author-reported on three seeds; developed on RoboDojo validation layouts with simulator ground truth.</p>
+
+  <div class="two">
+    <div>
+      <h3>RoboCasa365</h3>
+      <div class="tablewrap">
+        <p class="tcap"><b>Success rate (%)</b> on the 50 target tasks; <em>Seen</em> and <em>Unseen</em> are composite tasks; 50 rollouts per task.</p>
+        <table>
+          <thead><tr><th>Method</th><th>Atomic</th><th>Seen</th><th>Unseen</th><th>Overall</th></tr></thead>
+          <tbody>
+            <tr><td>&pi;<sub>0.5</sub></td><td>39.6</td><td>7.1</td><td>1.2</td><td>16.9</td></tr>
+            <tr><td>RLDX-1</td><td>67.6</td><td>27.9</td><td>8.5</td><td>36.0</td></tr>
+            <tr><td>Xiaomi-Robotics-1</td><td>80.2</td><td>57.1</td><td>32.1</td><td>57.4</td></tr>
+            <tr><td>Awomo-0.5I</td><td>86.5</td><td>58.8</td><td>45.2</td><td>64.4</td></tr>
+            <tr><td>HexaShell</td><td>91.1</td><td>85.0</td><td>80.0</td><td>85.6</td></tr>
+            <tr class="ours sep"><td>LEAP (ours)</td><td><b>95.1</b></td><td><b>90.5</b></td><td><b>84.0</b></td><td><b>90.1</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tnote">Baselines from the public leaderboard (Nov.&nbsp;16, 2026), not rerun.</p>
+    </div>
+    <div>
+      <h3>LIBERO-PRO</h3>
+      <div class="tablewrap">
+        <p class="tcap"><b>Success rate (%)</b> on 50 swap instances per suite. All methods use Claude Opus 5.5.</p>
+        <table>
+          <thead><tr><th>Method</th><th>Object</th><th>Spatial</th><th>Goal</th><th>LIBERO-10</th><th>All</th></tr></thead>
+          <tbody>
+            <tr><td>Opus 5.5 (EEF)</td><td>56.5</td><td>90.0</td><td>45.5</td><td>0.0</td><td>48.0</td></tr>
+            <tr><td>PyRUA-Lean (code + &pi;<sub>0.5</sub>)</td><td><b>100.0</b></td><td>80.0</td><td><b>100.0</b></td><td>68.0</td><td>87.0</td></tr>
+            <tr class="sep"><td>LEAP, open loop</td><td>60.0</td><td>82.0</td><td>70.0</td><td>34.0</td><td>61.5</td></tr>
+            <tr class="ours"><td>LEAP, one replan</td><td><b>100.0</b></td><td><b>96.0</b></td><td><b>100.0</b></td><td><b>84.0</b></td><td><b>95.0</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tnote">LEAP uses no learned policy. One replan corrects 67 of the 77 open-loop failures.</p>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<section class="wide" id="data">
+  <div class="col" style="padding:0">
+    <h2><span class="num">Robot data</span>From recorded episodes to Lean targets</h2>
+    <p>A recorded episode can be converted into a Lean target by rule, without a learned model: record fields become Lean bindings, the annotated sub-tasks not yet finished become typed goals, and unrecorded values stay <code>unknown</code>. On six AgiBot tasks, targets accept 66.7&ndash;100% of unseen episodes of their own task; of the 58 rejections, 15 are corrupt recordings, so a rejection marks the record, not the demonstration.</p>
+  </div>
+  <figure>
+    <img src="static/figures/robot_data.png" alt="From recorded AgiBot episodes to Lean targets: the recorded episode, the Lean target, fitting and checking, and a rejected corrupt recording." loading="lazy">
+    <figcaption><b>From recorded episodes to Lean targets.</b> (a) An AgiBot episode of task 709: frame-0 observations form the input; the 12 annotated sub-tasks become goals. (b) The target, built by rule without a model (abridged). (c) Two values are fitted: a container half-extent from <i>N</i> calibration episodes and the largest wrist step from other tasks; bars: unseen episodes accepted. (d) A rejected episode: between frames 732 and 733 the camera is unchanged, but the recorded left wrist rises by 20.4&nbsp;cm.</figcaption>
+  </figure>
+</section>
+
+<hr>
+
+<section class="col" id="scope">
+  <h2><span class="num">Scope</span>What a certificate covers</h2>
+  <p>A certificate is relative to the family. It covers the stated rows and their premises, but not whether the beliefs contain the true scene, the robot tracks its commands, the rows hold between checked points, or contact follows the chosen laws. If the agent misreads the instruction or picks the wrong law, LEAP certifies the wrong action; goal rows quote the instruction span they encode, so such errors can be audited. The search is local, so an empty result does not prove that no valid action exists. Each episode calls a language model and runs a search, so LEAP is not suited to fast reactive control. Apart from the three real tabletop tasks, the quantitative experiments are in simulation, and the RoboDojo results come from one evaluation seed.</p>
+</section>
+
+<hr>
+
+<section class="col" id="bibtex">
+  <h2><span class="num">Citation</span>BibTeX</h2>
+<pre id="bib">@article{fan2026leap,
+  title   = {LEAP: Lean as Policy for Verifiable Robot Control},
+  author  = {Fan, Weichen and Hu, Kairui and Diao, Haiwen and Hu, Siyuan and
+             Wang, Ziyi and Huang, Ziqi and Liu, Ziwei},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</pre>
+  <button class="copy" type="button" data-copy="bib">Copy</button>
+</section>
+</main>
+
+<footer class="col">
+  Correspondence: <a href="mailto:ziwei.liu@ntu.edu.sg">ziwei.liu@ntu.edu.sg</a>
+</footer>
+
+<script src="static/page.js"></script>
+</body>
+</html>
