@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;650;700;750&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/style.css?v=6">
+<link rel="stylesheet" href="static/style.css?v=7">
 </head>
 <body>
 
@@ -119,6 +119,37 @@
       <div><span class="chip e">&#8496;</span><b>Embodiment rows</b> bound what the robot can execute: joint domains, rates, static moments.</div>
     </div>
     <p>Quantities that perception cannot pin down, such as the position or mass of the mug, enter as intervals &Theta; rather than single numbers, and the robust set &#8497;<sub>rob</sub> holds for every scene they allow. Preferences such as speed or clearance stay out of the constraints and form a separate objective, so &#8497; stays as large as the task allows.</p>
+    <figure class="frobfig">
+<svg class="frob" viewBox="0 0 660 252" role="img" aria-label="Robust feasible set: each scene allowed by perception gives its own feasible set; their intersection is the robust set. A candidate whose tolerance ball lies inside it is certified; another candidate valid only in one scene is not.">
+<defs><clipPath id="c1"><ellipse cx="405.0" cy="114.0" rx="129.0" ry="69.0" transform="rotate(-8 405.0 114.0)"/></clipPath><clipPath id="c2"><ellipse cx="471.0" cy="123.0" rx="120.0" ry="63.0" transform="rotate(12 471.0 123.0)"/></clipPath></defs>
+<g font-family="Inter Tight,Helvetica,Arial,sans-serif" font-size="13">
+<text x="6.0" y="22.8" font-weight="700" fill="#edf1f6">(a) Beliefs</text>
+<text x="222.0" y="22.8" font-weight="700" fill="#edf1f6">(b) Action space <tspan font-family="Georgia,serif" font-style="italic">&#119980;</tspan></text>
+<rect x="12.0" y="39.0" width="138.0" height="159.0" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.18)"/>
+<text x="145.2" y="57.0" text-anchor="end" fill="#9aa6b6" font-family="Georgia,serif" font-style="italic" font-size="15">&#920;</text>
+<circle cx="45.0" cy="81.0" r="5" fill="#9aa6b6"/><text x="35.0" y="86.0" text-anchor="end" fill="#9aa6b6" font-size="14"><tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3">1</tspan><tspan dy="-3"></tspan></text>
+<circle cx="111.0" cy="162.0" r="5" fill="#ff9a6b"/><text x="121.0" y="167.0" fill="#ff9a6b" font-size="14"><tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3">2</tspan><tspan dy="-3"></tspan></text>
+<circle cx="93.0" cy="78.0" r="5" fill="#4fd1c5"/><text x="87.0" y="98.0" text-anchor="end" fill="#4fd1c5" font-size="14"><tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3">3</tspan><tspan dy="-3"></tspan></text>
+<text x="81.0" y="219.0" text-anchor="middle" fill="#8b97a8" font-size="11.5">scenes perception allows</text>
+<path d="M159.0 108.0H216.0" stroke="#8b97a8" stroke-width="1.6"/><path d="M219.0 108.0l-8 -4v8z" fill="#8b97a8"/>
+<text x="189.0" y="101.0" text-anchor="middle" fill="#8b97a8" font-size="11">each <tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3"></tspan><tspan dy="-3"></tspan></text>
+<text x="189.0" y="124.0" text-anchor="middle" fill="#8b97a8" font-size="11">gives <tspan font-family="Georgia,serif" font-style="italic">&#8497;</tspan>(<tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3"></tspan><tspan dy="-3"></tspan>)</text>
+<rect x="228.0" y="30.0" width="420.0" height="201.0" rx="6" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.18)"/>
+<g clip-path="url(#c1)"><g clip-path="url(#c2)"><ellipse cx="447.0" cy="93.0" rx="105.0" ry="51.0" transform="rotate(0 447.0 93.0)" fill="rgba(125,242,207,.22)"/></g></g>
+<ellipse cx="405.0" cy="114.0" rx="129.0" ry="69.0" transform="rotate(-8 405.0 114.0)" fill="none" stroke="#9aa6b6" stroke-width="2"/><ellipse cx="471.0" cy="123.0" rx="120.0" ry="63.0" transform="rotate(12 471.0 123.0)" fill="none" stroke="#ff9a6b" stroke-width="2"/><ellipse cx="447.0" cy="93.0" rx="105.0" ry="51.0" transform="rotate(0 447.0 93.0)" fill="none" stroke="#4fd1c5" stroke-width="2"/>
+<text x="279.0" y="74.0" text-anchor="middle" fill="#9aa6b6" font-size="14"><tspan font-family="Georgia,serif" font-style="italic">&#8497;</tspan>(<tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3">1</tspan><tspan dy="-3"></tspan>)</text>
+<text x="597.0" y="176.0" text-anchor="middle" fill="#ff9a6b" font-size="14"><tspan font-family="Georgia,serif" font-style="italic">&#8497;</tspan>(<tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3">2</tspan><tspan dy="-3"></tspan>)</text>
+<text x="531.0" y="51.8" text-anchor="middle" fill="#4fd1c5" font-size="14"><tspan font-family="Georgia,serif" font-style="italic">&#8497;</tspan>(<tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3">3</tspan><tspan dy="-3"></tspan>)</text>
+<text x="447.0" y="90.2" text-anchor="middle" fill="#7df2cf" font-size="15" font-weight="700"><tspan font-family="Georgia,serif" font-style="italic">&#8497;</tspan><tspan font-size="10" dy="4">rob</tspan></text>
+<circle cx="435.0" cy="126.0" r="15.600000000000001" fill="none" stroke="#7df2cf" stroke-dasharray="4 3"/><circle cx="435.0" cy="126.0" r="3.5" fill="#7df2cf"/>
+<path d="M445.8 132.0L486.0 208.8" stroke="#7df2cf"/>
+<text x="643.2" y="218.8" text-anchor="end" fill="#7df2cf" font-size="11.5"><tspan font-family="Georgia,serif" font-style="italic">q*</tspan>: whole ball <tspan font-family="Georgia,serif" font-style="italic">B<tspan font-size="8" dy="3">r</tspan></tspan><tspan dy="-3">(</tspan><tspan font-family="Georgia,serif" font-style="italic">q*</tspan>) in <tspan font-family="Georgia,serif" font-style="italic">&#8497;</tspan><tspan font-size="8" dy="3">rob</tspan><tspan dy="-3">, certified</tspan></text>
+<circle cx="309.0" cy="132.0" r="15.600000000000001" fill="none" stroke="#9aa6b6" stroke-dasharray="4 3"/><circle cx="309.0" cy="132.0" r="3.5" fill="#9aa6b6"/>
+<path d="M306.0 147.6L288.0 213.0" stroke="#9aa6b6"/>
+<text x="234.0" y="218.8" fill="#9aa6b6" font-size="11.5"><tspan font-family="Georgia,serif" font-style="italic">q&#8242;</tspan>: fails in <tspan font-family="Georgia,serif" font-style="italic">&#952;</tspan><tspan font-size="9" dy="3">2</tspan><tspan dy="-3"></tspan></text>
+</g></svg>
+      <figcaption><b>The robust feasible set.</b> (a) Perception leaves a set &Theta; of possible scenes; three are shown. (b) Each scene &theta; gives its own feasible set &#8497;(&theta;), and &#8497;<sub>rob</sub> is their intersection. A candidate is certified when the whole ball <i>B<sub>r</sub></i>(<i>q</i>) of actions the robot may actually execute lies inside &#8497;<sub>rob</sub>, as for <i>q</i>*; <i>q</i>&prime; is valid in scene &theta;<sub>1</sub> but fails if the true scene is &theta;<sub>2</sub>, so it can at most be chance-estimated.</figcaption>
+    </figure>
   </div>
 </section>
 

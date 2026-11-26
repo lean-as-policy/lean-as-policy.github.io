@@ -268,3 +268,5 @@ code { font: 0.84em var(--mono); color: #bff7e6; background: rgba(125,242,207,.0
 .hero-video .vmeta span:first-child { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; }
 figure.sped { position: relative; max-width: 860px; margin-left: auto; margin-right: auto; }
 .speed { position: absolute; z-index: 2; top: 12px; left: 12px; font: 700 13px/1 var(--mono); color: var(--on-accent); background: var(--accent); padding: 6px 9px; border-radius: 999px; pointer-events: none; }
+.frobfig { margin: 22px 0 8px; }
+.frobfig svg { display: block; width: 100%; height: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 10px 8px; }
