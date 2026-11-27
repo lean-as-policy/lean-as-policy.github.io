@@ -319,16 +319,19 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
         <button class="fam" type="button" data-uses="kin.chain contact.orientation_kept geom.above_plane geom.distance contact.parallel_jaw contact.rigid_carry time.episode_budget"><b>Put the bowl on the plate</b><code>place_bowl</code> &middot; four knots: over the bowl, close, lift, carry over the plate, open</button>
         <button class="fam" type="button" data-uses="kin.chain contact.orientation_kept contact.rigid_carry geom.above_plane"><b>Pick the cream cheese and place it in the basket</b><code>cream_cheese_to_basket</code> &middot; the LIBERO-PRO family of the pipeline demo, plus clearance rows for six other objects</button>
       </div>
-      <pre class="lean" id="lawcode"><span class="c">-- Leap/Laws/Friction.lean, excerpt: one brick</span>
-<span class="k">def</span> pinchHolds (id : String) (mu normalForce mass : Expr)
-    (accel : Expr := gravity) ... : Build Unit := <span class="k">do</span>
-  uses <span class="s">"friction.coulomb_pinch/1"</span>
-    [<span class="s">"coefficient_nonnegative"</span>, <span class="s">"two_opposed_pads"</span>, <span class="s">"equal_pad_forces"</span>]
-  <span class="k">let</span> grip &larr; share (mu * normalForce)
-  <span class="k">let</span> load &larr; share (mass * accel)
-  require (id ++ <span class="s">":force"</span>) (2 * grip - load)
-    (law := <span class="s">"friction.coulomb_pinch/1"</span>)
-  <span class="c">-- slow fidelity adds the torque row 4&mu;NR &ge; 3ma&#8467;</span></pre>
+      <pre class="lean" id="lawcode"><span class="c">-- one brick of the law library (simplified)</span>
+<span class="c">-- the pinch holds the load: m(g + a) &le; 2&mu;N</span>
+<span class="k">def</span> pinchHolds (&mu; N m a : &#8474;) : Bool :=
+  decide (m * (g + a) &le; 2 * &mu; * N)
+
+<span class="c">-- what a "yes" guarantees, proved once</span>
+<span class="k">theorem</span> pinchHolds_mono
+    (h : pinchHolds &mu; N m a = true)
+    (ha : a' &le; a) (hm : 0 &le; m) :
+    pinchHolds &mu; N m a' = true := <span class="k">by</span> &hellip;
+
+<span class="c">-- stated assumptions: &mu; &ge; 0, two opposed pads,</span>
+<span class="c">-- equal pad forces; m and &mu; come in as beliefs</span></pre>
     </div>
   </div>
   <div class="col" style="padding:0">
