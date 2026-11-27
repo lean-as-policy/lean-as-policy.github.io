@@ -86,3 +86,15 @@ document.querySelectorAll('[data-copy]').forEach(function (btn) {
     if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () {});
   });
 });
+
+// Comparison tabs.
+document.querySelectorAll('[data-vs]').forEach(function (box) {
+  var tabs = box.querySelectorAll('.tabs button');
+  var panes = box.querySelectorAll('.vs-pane');
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () {
+      tabs.forEach(function (x, j) { x.setAttribute('aria-selected', i === j); });
+      panes.forEach(function (p, j) { p.hidden = i !== j; });
+    });
+  });
+});

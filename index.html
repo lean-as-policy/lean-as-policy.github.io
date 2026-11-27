@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;650;700;750&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/style.css?v=8">
+<link rel="stylesheet" href="static/style.css?v=9">
 </head>
 <body>
 
@@ -25,6 +25,7 @@
       <a href="#idea">Idea</a>
       <a href="#pipeline-demo">Demo</a>
       <a href="#library">Library</a>
+      <a href="#compare">Compare</a>
       <a href="#real-world">Real robot</a>
       <a href="#results">Results</a>
     </div>
@@ -389,6 +390,111 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
 
 <hr>
 
+<section class="wide" id="compare">
+  <div class="col" style="padding:0">
+    <h2><span class="num">Comparisons</span>How is LEAP different?</h2>
+    <p>The three questions we are asked most often. Each tab gives the short answer, a picture, and what each approach can and cannot tell you.</p>
+  </div>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="vsa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#a6b1c0"/></marker><marker id="vsg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#7df2cf"/></marker></defs></svg>
+  <div class="vs" data-vs>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" aria-selected="true">Lean vs. Python</button>
+      <button type="button" role="tab" aria-selected="false">LEAP vs. inverse kinematics</button>
+      <button type="button" role="tab" aria-selected="false">LEAP vs. a simulator</button>
+    </div>
+<div class="vs-pane">
+<p class="vs-q">&ldquo;Python can compute the same grip check. Why write the equations in Lean?&rdquo;</p>
+<p class="vs-a">In Python an equation is a function you can only call. In Lean it is an object that the solver, the verifier and the proof checker all read, so the action that is searched is the action that is checked.</p>
+<div class="vs-fig"><figure class="vs-card"><h4>Python: a black box</h4><svg viewBox="0 0 440 210" role="img" aria-label="Python: numbers go into a function holds, which returns True. Search, worst case and proof each need a separate hand-written copy.">
+<text x="20" y="38" class="m" fill="#a6b1c0" font-size="15">&#956;=0.5 N=10</text>
+<text x="20" y="58" class="m" fill="#a6b1c0" font-size="15">m=0.8 a=2.0</text>
+<line x1="128" y1="47" x2="166" y2="47" stroke="#a6b1c0" stroke-width="2" marker-end="url(#vsa)"/>
+<rect x="172" y="21" width="120" height="52" rx="8" fill="#1d2c44" stroke="rgba(255,255,255,.25)"/>
+<text x="232" y="53" text-anchor="middle" class="m" fill="#edf1f6" font-size="17">holds( )</text>
+<line x1="296" y1="47" x2="334" y2="47" stroke="#a6b1c0" stroke-width="2" marker-end="url(#vsa)"/>
+<text x="342" y="53" class="m" fill="#7df2cf" font-size="17">True</text>
+<text x="20" y="114" fill="#a6b1c0" font-size="15">Also needed, each written again by hand:</text>
+<rect x="20" y="128" width="126" height="42" rx="7" fill="none" stroke="#ff7d6b" stroke-dasharray="5 4" stroke-width="1.6"/><text x="83" y="154" text-anchor="middle" fill="#ffa596" font-size="16">search</text><rect x="157" y="128" width="126" height="42" rx="7" fill="none" stroke="#ff7d6b" stroke-dasharray="5 4" stroke-width="1.6"/><text x="220" y="154" text-anchor="middle" fill="#ffa596" font-size="16">worst case</text><rect x="294" y="128" width="126" height="42" rx="7" fill="none" stroke="#ff7d6b" stroke-dasharray="5 4" stroke-width="1.6"/><text x="357" y="154" text-anchor="middle" fill="#ffa596" font-size="16">proof</text>
+<text x="220" y="196" text-anchor="middle" fill="#ff7d6b" font-size="15">three copies that can drift apart</text></svg><figcaption>You can call it at one point. Searching over it, bounding it over every scene, or proving something about it each needs a separate copy written by hand.</figcaption></figure><figure class="vs-card ours"><h4>Lean: one row, read three ways</h4><svg viewBox="0 0 440 210" role="img" aria-label="Lean: one row is read by the solver, the verifier and the kernel.">
+<rect x="14" y="70" width="172" height="70" rx="8" fill="#060c15" stroke="#7df2cf" stroke-opacity=".6"/>
+<text x="28" y="98" class="m" font-size="15"><tspan fill="#b9a8ff">require</tspan><tspan fill="#ffb38a"> "hold"</tspan></text>
+<text x="28" y="122" class="m" font-size="15" fill="#edf1f6">2&#956;N &#8722; m(g+a) &#8805; 0</text>
+<path d="M186,105 H214 V36 H244" fill="none" stroke="#7df2cf" stroke-width="2" marker-end="url(#vsg)"/>
+<path d="M214,105 H244" fill="none" stroke="#7df2cf" stroke-width="2" marker-end="url(#vsg)"/>
+<path d="M214,105 V174 H244" fill="none" stroke="#7df2cf" stroke-width="2" marker-end="url(#vsg)"/>
+<rect x="250" y="13" width="176" height="46" rx="7" fill="rgba(125,242,207,.07)" stroke="#7df2cf" stroke-opacity=".55"/><text x="262" y="33" fill="#edf1f6" font-size="16" font-weight="600">Solver</text><text x="262" y="50" fill="#a6b1c0" font-size="14.5">searches for actions</text><rect x="250" y="82" width="176" height="46" rx="7" fill="rgba(125,242,207,.07)" stroke="#7df2cf" stroke-opacity=".55"/><text x="262" y="102" fill="#edf1f6" font-size="16" font-weight="600">Verifier</text><text x="262" y="119" fill="#a6b1c0" font-size="14.5">bounds every scene</text><rect x="250" y="151" width="176" height="46" rx="7" fill="rgba(125,242,207,.07)" stroke="#7df2cf" stroke-opacity=".55"/><text x="262" y="171" fill="#edf1f6" font-size="16" font-weight="600">Kernel</text><text x="262" y="188" fill="#a6b1c0" font-size="14.5">checks the proofs</text></svg><figcaption>The solver searches for actions that satisfy the row, the verifier bounds it over every scene in the belief box, and the Lean kernel checks the proofs about it.</figcaption></figure></div>
+<h4 class="vs-h">Three things a row in Lean gives you</h4>
+<div class="tablewrap"><table class="vs-tbl"><thead><tr><th></th><th>Python</th><th>Lean</th></tr></thead><tbody><tr><td><b>Cover every case</b></td><td>A test checks the values you ran; every other value stays unknown.</td><td class="lp">A theorem covers all of them: if the grip holds at acceleration <i>a</i>, it holds at every <i>a</i>&prime; &le; <i>a</i>.</td></tr><tr><td><b>Show that something is impossible</b></td><td>&ldquo;IK did not converge&rdquo;: a bad start, or truly unreachable? It cannot tell.</td><td class="lp">A proof that the target lies beyond the arm&rsquo;s reach <i>L</i>&#8321; + <i>L</i>&#8322; rules it out before any search.</td></tr><tr><td><b>Catch a model&rsquo;s mistake</b></td><td>The model writes <code>2*&mu;*N - m</code>, forgetting (<i>g</i> + <i>a</i>). It runs, and a plan goes to the robot.</td><td class="lp">Every quantity carries a unit, so a force minus a mass is rejected before anything runs.</td></tr></tbody></table></div>
+<p class="vs-note">Lean does not make the physics true: a wrong law or a wrong belief still gives a wrong plan. It makes what we wrote checked, consistent and used the same way everywhere.</p>
+</div>
+<div class="vs-pane" hidden>
+<p class="vs-q">&ldquo;Isn&rsquo;t this just inverse kinematics?&rdquo;</p>
+<p class="vs-a">IK answers one narrow question: which joint angles put the hand at this pose. LEAP asks which poses, paths and contacts are valid for the whole task. IK is the special case with one goal, and inside LEAP it is a tool, not the policy.</p>
+<div class="vs-fig"><figure class="vs-card"><h4>Inverse kinematics</h4><svg viewBox="0 0 440 230" role="img" aria-label="Inverse kinematics: a two-link arm reaches one target pose; a dashed second elbow branch reaches the same pose.">
+<text x="20" y="30" fill="#a6b1c0" font-size="15">in: one hand pose</text>
+<text x="20" y="50" fill="#a6b1c0" font-size="15">out: joint angles &#952;&#8321;, &#952;&#8322;</text>
+<rect x="48" y="170" width="44" height="12" rx="3" fill="#a6b1c0"/>
+<path d="M70,170 L178,193 L250,110" fill="none" stroke="#6f7d90" stroke-width="5" stroke-dasharray="7 6" stroke-linecap="round"/>
+<path d="M70,170 L142,87 L250,110" fill="none" stroke="#edf1f6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="70" cy="170" r="7" fill="#1d2c44" stroke="#edf1f6" stroke-width="2.5"/><circle cx="142" cy="87" r="7" fill="#1d2c44" stroke="#edf1f6" stroke-width="2.5"/>
+<circle cx="178" cy="193" r="6" fill="#1d2c44" stroke="#6f7d90" stroke-width="2"/>
+<circle cx="250" cy="110" r="11" fill="none" stroke="#ff7d6b" stroke-width="2.5"/><path d="M250,92 V128 M232,110 H268" stroke="#ff7d6b" stroke-width="2"/>
+<text x="274" y="106" fill="#ff7d6b" font-size="15">target pose</text>
+<text x="200" y="222" fill="#6f7d90" font-size="14.5">dashed: other branch, same pose</text></svg><figcaption>One target pose in, joint angles out, on one of several branches. Joint limits are the only other constraint.</figcaption></figure><figure class="vs-card ours"><h4>LEAP</h4><svg viewBox="0 0 440 230" role="img" aria-label="LEAP: rim, handle and side grasps of a mug are valid; checked waypoints lead to the rim; a target beyond the arm's proved reach is ruled out.">
+<path d="M380,200 A330,330 0 0 0 312.5,0" fill="none" stroke="#7df2cf" stroke-opacity=".45" stroke-width="1.6" stroke-dasharray="6 5"/>
+<rect x="28" y="200" width="44" height="12" rx="3" fill="#a6b1c0"/>
+<path d="M50,200 L96,112 L150,46" fill="none" stroke="#edf1f6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="50" cy="200" r="7" fill="#1d2c44" stroke="#edf1f6" stroke-width="2.5"/><circle cx="96" cy="112" r="7" fill="#1d2c44" stroke="#edf1f6" stroke-width="2.5"/>
+<path d="M140,36 V30 H160 V36" fill="none" stroke="#edf1f6" stroke-width="3"/>
+<circle cx="150" cy="46" r="4.5" fill="#7df2cf"/><circle cx="184" cy="50" r="4.5" fill="#7df2cf"/><circle cx="214" cy="58" r="4.5" fill="#7df2cf"/><circle cx="240" cy="70" r="4.5" fill="#7df2cf"/><circle cx="260" cy="86" r="4.5" fill="#7df2cf"/>
+<rect x="230" y="122" width="64" height="76" rx="6" fill="#1d2c44" stroke="#a6b1c0" stroke-width="2"/>
+<path d="M294,137 C322,137 322,182 294,182" fill="none" stroke="#7df2cf" stroke-width="6"/>
+<line x1="230" y1="117" x2="294" y2="117" stroke="#7df2cf" stroke-width="5" stroke-linecap="round"/>
+<line x1="224" y1="138" x2="224" y2="186" stroke="#7df2cf" stroke-width="5" stroke-linecap="round"/>
+<text x="262" y="107" text-anchor="middle" fill="#7df2cf" font-size="15">rim</text>
+<text x="328" y="164" fill="#7df2cf" font-size="15">handle</text>
+<text x="214" y="166" text-anchor="end" fill="#7df2cf" font-size="15">side</text>
+<path d="M398,48 L416,66 M416,48 L398,66" stroke="#ff7d6b" stroke-width="3" stroke-linecap="round"/>
+<text x="436" y="90" text-anchor="end" fill="#ff7d6b" font-size="14.5">out of reach:</text>
+<text x="436" y="106" text-anchor="end" fill="#ff7d6b" font-size="14.5">ruled out first</text>
+<text x="176" y="30" fill="#7df2cf" font-size="14.5">dots: checked waypoints</text>
+<text x="104" y="224" fill="#6f7d90" font-size="14.5">dashed arc: the arm&#8217;s proved reach</text></svg><figcaption>Goal, physics and embodiment rows under uncertainty: rim, handle and side grasps of the mug are all valid. A target beyond the arm&rsquo;s proved reach is cut before IK runs.</figcaption></figure></div>
+<div class="tablewrap"><table class="vs-tbl"><thead><tr><th></th><th>Inverse kinematics</th><th>LEAP</th></tr></thead><tbody><tr><td><b>Question</b></td><td>Which joint angles reach this pose?</td><td class="lp">Which actions satisfy every row of the task?</td></tr><tr><td><b>Constraints</b></td><td>Kinematics and joint limits</td><td class="lp">Goal, physics (contact, friction, dynamics) and embodiment</td></tr><tr><td><b>Uncertainty</b></td><td>One exact target</td><td class="lp">Intervals from perception; the action must hold for all of them</td></tr><tr><td><b>Output</b></td><td>Joint angles</td><td class="lp">A verified action, or the rows that fail</td></tr><tr><td><b>On failure</b></td><td>&ldquo;Did not converge&rdquo;</td><td class="lp">&ldquo;No candidate found&rdquo;, or a proof that none exists</td></tr></tbody></table></div>
+<h4 class="vs-h">How LEAP uses IK</h4>
+<div class="vs-steps">
+<div><span>1</span><b>Propose, then check.</b> IK proposes joint angles for each waypoint; Lean checks the rounded angles with exact forward kinematics and every law.</div>
+<div><span>2</span><b>Run what was checked.</b> The robot executes the checked angles, never a fresh IK solution that could land on another wrist branch.</div>
+<div><span>3</span><b>Fail honestly.</b> Out-of-reach targets are cut by a proved bound first; an IK failure means &ldquo;no candidate found&rdquo;, not &ldquo;impossible&rdquo;.</div>
+</div>
+</div>
+<div class="vs-pane" hidden>
+<p class="vs-q">&ldquo;LEAP checks an action before the robot moves. Isn&rsquo;t that a simulator?&rdquo;</p>
+<p class="vs-a">A simulator tests one guessed world and tells you it worked in that run. LEAP checks every world that perception allows at once, but only for the laws it states.</p>
+<div class="vs-fig"><figure class="vs-card"><h4>Simulator: one world, one rollout</h4><svg viewBox="0 0 440 210" role="img" aria-label="Simulator: one mug with guessed mass and friction; the rollout worked; other possible worlds are never tested.">
+<text x="20" y="32" fill="#a6b1c0" font-size="15">mass = 0.36 kg <tspan fill="#6f7d90">(one guess)</tspan></text>
+<text x="20" y="52" fill="#a6b1c0" font-size="15">friction &#956; = 0.5 <tspan fill="#6f7d90">(one guess)</tspan></text>
+<text x="20" y="72" fill="#a6b1c0" font-size="15">mug exactly here</text>
+<g opacity="1.0"><rect x="292" y="74" width="44" height="54" rx="5" fill="#1d2c44" stroke="#edf1f6" stroke-width="2"/><path d="M336,86 C352,86 352,114 336,114" fill="none" stroke="#edf1f6" stroke-width="5.0"/></g>
+<path d="M314,68 C314,40 300,26 286,18" fill="none" stroke="#7df2cf" stroke-width="2" marker-end="url(#vsg)"/>
+<text x="268" y="158" fill="#7df2cf" font-size="16" font-weight="600">&#10003; worked in this run</text>
+<g opacity="0.7"><rect x="28" y="104" width="35" height="43" rx="4" fill="none" stroke="#6f7d90" stroke-width="2" stroke-dasharray="5 4"/><path d="M63,114 C76,114 76,136 63,136" fill="none" stroke="#6f7d90" stroke-width="4.0" stroke-dasharray="5 4"/><text x="46" y="132" text-anchor="middle" fill="#6f7d90" font-size="19">?</text></g><g opacity="0.7"><rect x="92" y="112" width="35" height="43" rx="4" fill="none" stroke="#6f7d90" stroke-width="2" stroke-dasharray="5 4"/><path d="M127,122 C140,122 140,144 127,144" fill="none" stroke="#6f7d90" stroke-width="4.0" stroke-dasharray="5 4"/><text x="110" y="140" text-anchor="middle" fill="#6f7d90" font-size="19">?</text></g><g opacity="0.7"><rect x="156" y="100" width="35" height="43" rx="4" fill="none" stroke="#6f7d90" stroke-width="2" stroke-dasharray="5 4"/><path d="M191,110 C204,110 204,132 191,132" fill="none" stroke="#6f7d90" stroke-width="4.0" stroke-dasharray="5 4"/><text x="174" y="128" text-anchor="middle" fill="#6f7d90" font-size="19">?</text></g>
+<text x="20" y="196" fill="#6f7d90" font-size="15">other worlds: never tested</text></svg><figcaption>Every value must be filled in, so unmeasured quantities are guessed. The result holds for that one world.</figcaption></figure><figure class="vs-card ours"><h4>LEAP: every world perception allows</h4><svg viewBox="0 0 440 210" role="img" aria-label="LEAP: every world perception allows, a set of mugs with mass and position ranges, is certified at once.">
+<text x="20" y="54" fill="#edf1f6" font-size="15">mass &#8712; [0.32, 0.40] kg</text>
+<text x="20" y="74" fill="#edf1f6" font-size="15">position &#177; 1 cm</text>
+<text x="20" y="94" fill="#edf1f6" font-size="15">&#956; unknown &#8594; stays unknown</text>
+<rect x="230" y="40" width="190" height="100" rx="10" fill="none" stroke="#7df2cf" stroke-opacity=".6" stroke-dasharray="6 5"/>
+<text x="228" y="30" fill="#7df2cf" font-size="14.5">&#920;: all worlds perception allows</text>
+<g opacity="0.75"><rect x="248" y="66" width="34" height="42" rx="4" fill="rgba(125,242,207,.06)" stroke="#7df2cf" stroke-width="2"/><path d="M282,75 C295,75 295,97 282,97" fill="none" stroke="#7df2cf" stroke-width="3.9"/></g><g opacity="0.75"><rect x="272" y="74" width="38" height="46" rx="4" fill="rgba(125,242,207,.06)" stroke="#7df2cf" stroke-width="2"/><path d="M310,84 C324,84 324,108 310,108" fill="none" stroke="#7df2cf" stroke-width="4.3"/></g><g opacity="0.75"><rect x="300" y="62" width="36" height="44" rx="4" fill="rgba(125,242,207,.06)" stroke="#7df2cf" stroke-width="2"/><path d="M336,72 C349,72 349,95 336,95" fill="none" stroke="#7df2cf" stroke-width="4.1"/></g><g opacity="0.75"><rect x="326" y="72" width="33" height="40" rx="4" fill="rgba(125,242,207,.06)" stroke="#7df2cf" stroke-width="2"/><path d="M359,81 C370,81 370,102 359,102" fill="none" stroke="#7df2cf" stroke-width="3.7"/></g>
+<text x="230" y="168" fill="#7df2cf" font-size="16" font-weight="600">&#10003; certified for all of them</text>
+<text x="20" y="198" fill="#6f7d90" font-size="14.5">otherwise: a chance estimate, or rejected with the failing rows</text></svg><figcaption>Measured quantities enter as intervals and unknowns stay unknown. The action is certified only if every row holds in all of them.</figcaption></figure></div>
+<div class="tablewrap"><table class="vs-tbl"><thead><tr><th></th><th>Simulator</th><th>LEAP</th></tr></thead><tbody><tr><td><b>Scene</b></td><td>One exact world; every value must be filled in</td><td class="lp">Every world perception allows; unknowns stay unknown</td></tr><tr><td><b>How it judges</b></td><td>Steps the physics forward in time, approximately</td><td class="lp">Evaluates the stated laws exactly, at checked points</td></tr><tr><td><b>Answer</b></td><td>&ldquo;It worked in this run&rdquo;</td><td class="lp">Certified, chance-estimated or rejected, with the failing rows</td></tr><tr><td><b>Limit</b></td><td>Sim-to-real gap; other worlds stay untested</td><td class="lp">Only the stated laws; no full dynamics between checked points</td></tr></tbody></table></div>
+<p class="vs-note">They answer different questions, so LEAP does not replace a simulator. A simulator models rich dynamics for one world; LEAP gives a guarantee over all allowed worlds for the laws it states. Like any recorded trajectory, an action planned in a simulator can be checked by a LEAP family before it runs.</p>
+</div>
+  </div>
+</section>
+
+<hr>
+
 <section class="wide" id="cup">
   <div class="col" style="padding:0">
     <h2><span class="num">Worked example</span>Picking up a glass cup, empty and with water</h2>
@@ -566,6 +672,6 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
   Correspondence: <a href="mailto:ziwei.liu@ntu.edu.sg">ziwei.liu@ntu.edu.sg</a>
 </footer>
 
-<script src="static/page.js?v=2"></script>
+<script src="static/page.js?v=3"></script>
 </body>
 </html>
