@@ -185,7 +185,7 @@ code { font: 0.84em var(--mono); color: #bff7e6; background: rgba(125,242,207,.0
 .nav2 button:hover { color: var(--accent); border-color: var(--accent); }
 
 /* library */
-.lib { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 22px; align-items: start; }
+.lib { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 22px; align-items: start; }
 .bricks { display: grid; gap: 10px; }
 .bgroup { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px 12px; }
 .bgroup h5 { margin: 0 0 8px; font: 600 12px/1 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
@@ -270,3 +270,6 @@ figure.sped { position: relative; max-width: 860px; margin-left: auto; margin-ri
 .speed { position: absolute; z-index: 2; top: 12px; left: 12px; font: 700 13px/1 var(--mono); color: var(--on-accent); background: var(--accent); padding: 6px 9px; border-radius: 999px; pointer-events: none; }
 .frobfig { margin: 22px 0 8px; }
 .frobfig svg { display: block; width: 100%; height: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 10px 8px; }
+
+.codecap { font: 600 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 16px 0 0; }
+.famcode { font-size: 12px; }

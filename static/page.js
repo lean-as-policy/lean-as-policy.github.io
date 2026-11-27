@@ -72,6 +72,8 @@ document.querySelectorAll('[data-demo]').forEach(function (demo) {
     fams.forEach(function (x) { x.setAttribute('aria-pressed', x === f); });
     var uses = (f.dataset.uses || '').split(/\s+/);
     bricks.forEach(function (b) { b.classList.toggle('on', uses.indexOf(b.dataset.law) >= 0); });
+    var i = Array.prototype.indexOf.call(fams, f);
+    document.querySelectorAll('.famcode').forEach(function (c) { c.hidden = String(i) !== c.dataset.code; });
   };
   fams.forEach(function (f) { f.addEventListener('click', function () { show(f); }); });
   if (fams.length) show(fams[0]);

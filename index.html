@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;650;700;750&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/style.css?v=7">
+<link rel="stylesheet" href="static/style.css?v=8">
 </head>
 <body>
 
@@ -302,7 +302,7 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
 <section class="wide" id="library">
   <div class="col" style="padding:0">
     <h2><span class="num">Lean library</span>A LEGO-like library of physical laws</h2>
-    <p>Families are not written from scratch. Each one is a short Lean&nbsp;4 module that snaps together <b>law bricks</b> from a shared library: kinematics, geometry, contact, friction, dynamics and articulated mechanisms. A law is a Lean function that adds rows, names itself, and lists the premises under which its rows hold. Laws contain no numbers; masses, friction coefficients and tolerances enter as beliefs or as literals with units, and a row that mixes dimensions is rejected. Press a family to see which bricks it uses.</p>
+    <p>Families are not written from scratch. Each one is a short Lean&nbsp;4 module that snaps together <b>law bricks</b> from a shared library: kinematics, geometry, contact, friction, dynamics and articulated mechanisms. A law is a Lean function that adds rows, names itself, and lists the premises under which its rows hold. Laws contain no numbers; masses, friction coefficients and tolerances enter as beliefs or as literals with units, and a row that mixes dimensions is rejected. Press a family to see which bricks it uses and the Lean code it is written in.</p>
   </div>
   <div class="lib">
     <div class="bricks">
@@ -319,21 +319,58 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
         <button class="fam" type="button" data-uses="kin.chain contact.orientation_kept geom.above_plane geom.distance contact.parallel_jaw contact.rigid_carry time.episode_budget"><b>Put the bowl on the plate</b><code>place_bowl</code> &middot; four knots: over the bowl, close, lift, carry over the plate, open</button>
         <button class="fam" type="button" data-uses="kin.chain contact.orientation_kept contact.rigid_carry geom.above_plane"><b>Pick the cream cheese and place it in the basket</b><code>cream_cheese_to_basket</code> &middot; the LIBERO-PRO family of the pipeline demo, plus clearance rows for six other objects</button>
       </div>
-      <pre class="lean" id="lawcode"><span class="c">-- one law brick (simplified)</span>
-<span class="c">-- pinch holds: m(g + a) &le; 2&mu;N</span>
-<span class="k">def</span> pinchHolds (&mu; N m a : &#8474;)
-    : Bool :=
-  decide (m * (g + a) &le; 2 * &mu; * N)
-
-<span class="c">-- a "yes" also covers slower carries</span>
-<span class="k">theorem</span> pinchHolds_mono
-    (h : pinchHolds &mu; N m a = true)
-    (ha : a' &le; a) (hm : 0 &le; m) :
-    pinchHolds &mu; N m a' = true
-    := <span class="k">by</span> &hellip;
-
-<span class="c">-- assumes &mu; &ge; 0, two opposed pads;</span>
-<span class="c">-- m and &mu; come in as beliefs</span></pre>
+      <p class="codecap" id="lawcap">The Lean family for the task you pick:</p><pre class="lean famcode" data-code="0"><span class="c">-- Move a held block to a target</span>
+<span class="c">-- sketch, simplified</span>
+<span class="k">def</span> family : Family := 
+  Family.build <span class="s">"reach"</span> <span class="k">do</span>
+  <span class="k">let</span> block  &larr; Geometry.box <span class="s">"block"</span>
+  <span class="k">let</span> target &larr; belief <span class="s">"target.xy"</span>
+  <span class="k">let</span> path   &larr; jointPath 1
+  <span class="k">let</span> hand   &larr; Kinematics.toolPose path 1
+<span class="c">  -- kin.chain: one-knot planar arm</span>
+  Task.reaches <span class="s">"goal"</span> hand target
+  Embodiment.jointRange <span class="s">"elbow"</span> path
+<span class="c">  -- friction.coulomb_pinch: grip holds</span>
+  Friction.pinchHolds <span class="s">"hold"</span> &mu; N block.mass
+<span class="c">  -- friction.pinch_torque (slow fidelity)</span>
+  Friction.pinchTorque <span class="s">"twist"</span> &mu; N block</pre><pre class="lean famcode" data-code="1" hidden><span class="c">-- Put the bowl on the plate</span>
+<span class="c">-- sketch, simplified</span>
+<span class="k">def</span> family : Family := 
+  Family.build <span class="s">"place_bowl"</span> <span class="k">do</span>
+  <span class="k">let</span> bowl  &larr; Geometry.box <span class="s">"bowl"</span>
+  <span class="k">let</span> plate &larr; Geometry.box <span class="s">"plate"</span>
+<span class="c">  -- kin.chain: four knots</span>
+  <span class="k">let</span> path  &larr; jointPath 4
+<span class="c">  -- over bowl, close, lift, over plate</span>
+  Contact.parallelJaw <span class="s">"grasp"</span> path 1 bowl
+  Contact.rigidCarry <span class="s">"carry"</span> path 2 4 bowl
+  Contact.orientationKept <span class="s">"level"</span> path
+  Geometry.abovePlane <span class="s">"lift"</span> bowl plate.top
+  Geometry.distance <span class="s">"on"</span> bowl plate
+  releaseAt 4
+<span class="c">  -- time.episode_budget</span>
+  Time.episodeBudget path</pre><pre class="lean famcode" data-code="2" hidden><span class="c">-- Cream cheese into the basket</span>
+<span class="c">-- excerpt: the family run in the</span>
+<span class="c">-- pipeline demo</span>
+<span class="k">def</span> family (f : Fidelity) : Family :=
+  Family.build LeapRuntime.facts f
+    <span class="s">"cream_cheese_to_basket"</span> <span class="k">do</span>
+  <span class="k">let</span> cream_cheese &larr; Geometry.box <span class="s">"cream_cheese"</span>
+  <span class="k">let</span> basket &larr; Geometry.box <span class="s">"basket"</span>
+  <span class="k">let</span> basket_interior &larr;
+    Geometry.box <span class="s">"basket_interior"</span>
+  <span class="k">let</span> path &larr; jointPath 2
+  <span class="k">let</span> poses &larr; Kinematics.toolPoses path
+<span class="c">  -- grasp at knot 1, carry to knot 2</span>
+  GeometryMotion.grasp <span class="s">"grasp"</span>
+    p1 p0 cream_cheese …
+  Geometry.abovePlane <span class="s">"rim"</span>
+    b2.bottom basket.top …
+  Task.placedIn <span class="s">"g1"</span> <span class="s">"place it in the basket"</span>
+    b2 basket_interior (knot := some 2)
+<span class="c">  -- … 30 keep-clear rows, six objects</span>
+  closeAt 1 <span class="s">"cream_cheese"</span>
+  releaseAt 2</pre>
     </div>
   </div>
   <div class="col" style="padding:0">
@@ -529,6 +566,6 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
   Correspondence: <a href="mailto:ziwei.liu@ntu.edu.sg">ziwei.liu@ntu.edu.sg</a>
 </footer>
 
-<script src="static/page.js"></script>
+<script src="static/page.js?v=2"></script>
 </body>
 </html>
