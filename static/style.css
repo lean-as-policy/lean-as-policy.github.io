@@ -308,3 +308,10 @@ figure.sped { position: relative; max-width: 860px; margin-left: auto; margin-ri
   .vs-tbl th:first-child, .vs-tbl td:first-child { width: 26%; }
   .vs-tbl th, .vs-tbl td { padding: 8px 7px; font-size: 13.5px; }
 }
+.vs-h:first-of-type { margin-top: 4px; }
+.vs-an { margin-top: 12px; }
+.vs-an .vs-card p { font: 15px/1.55 var(--sans); color: var(--muted); margin: 0; }
+.vs-an .vs-card p b { color: var(--ink); }
+.vs-an .vs-card p.vs-raw { font: 13px/1.4 var(--mono); color: var(--faint); background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 10px; margin: 0 0 10px; overflow-x: auto; white-space: nowrap; }
+.vs-an .vs-card p.vs-raw.ok { color: var(--accent); }
+.vs-fig + .vs-h, .vs-fig + .tablewrap { margin-top: 26px; }

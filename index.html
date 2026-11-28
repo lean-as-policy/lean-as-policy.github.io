@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;650;700;750&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/style.css?v=9">
+<link rel="stylesheet" href="static/style.css?v=10">
 </head>
 <body>
 
@@ -404,8 +404,14 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
     </div>
 <div class="vs-pane">
 <p class="vs-q">&ldquo;Python can compute the same grip check. Why write the equations in Lean?&rdquo;</p>
-<p class="vs-a">In Python an equation is a function you can only call. In Lean it is an object that the solver, the verifier and the proof checker all read, so the action that is searched is the action that is checked.</p>
-<div class="vs-fig"><figure class="vs-card"><h4>Python: a black box</h4><svg viewBox="0 0 440 210" role="img" aria-label="Python: numbers go into a function holds, which returns True. Search, worst case and proof each need a separate hand-written copy.">
+<p class="vs-a">Python is a calculator; Lean is a language for verifiable physics. In LEAP the agent does not output joint angles: it writes physics, and every statement it writes is checked before the robot moves.</p>
+<h4 class="vs-h">1 &middot; An agent acts better through the right tool</h4>
+<div class="vs-fig vs-an">
+<div class="vs-card"><h4>Acting on raw numbers</h4><p class="vs-raw">x=0.412 y=&minus;0.087 z=0.153 &hellip; grip=0.3</p><p>Like asking a model to reason about a protein from its raw letter sequence alone: the structure that matters is not in the representation. On our three real tasks, GPT-6 Astra outputting end-effector targets directly completes <b>5 of 15</b> rollouts.</p></div>
+<div class="vs-card ours"><h4>Acting through physics</h4><p class="vs-raw ok">reach &middot; contact &middot; friction &middot; units &#10003;</p><p>Like giving that model tools for the protein&rsquo;s structure, chemistry and physics. The agent states goal, contact, friction and reach as laws; a solver and a verifier work from them. LEAP-Harness completes <b>13 of 15</b> and judges <b>30 of 30</b> recorded trajectories correctly before they run.</p></div>
+</div>
+<h4 class="vs-h">2 &middot; One statement, read three ways</h4>
+<div class="vs-fig"><figure class="vs-card"><h4>Python: a calculator</h4><svg viewBox="0 0 440 210" role="img" aria-label="Python: numbers go into a function holds, which returns True. Search, worst case and proof each need a separate hand-written copy.">
 <text x="20" y="38" class="m" fill="#a6b1c0" font-size="15">&#956;=0.5 N=10</text>
 <text x="20" y="58" class="m" fill="#a6b1c0" font-size="15">m=0.8 a=2.0</text>
 <line x1="128" y1="47" x2="166" y2="47" stroke="#a6b1c0" stroke-width="2" marker-end="url(#vsa)"/>
@@ -415,7 +421,7 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
 <text x="342" y="53" class="m" fill="#7df2cf" font-size="17">True</text>
 <text x="20" y="114" fill="#a6b1c0" font-size="15">Also needed, each written again by hand:</text>
 <rect x="20" y="128" width="126" height="42" rx="7" fill="none" stroke="#ff7d6b" stroke-dasharray="5 4" stroke-width="1.6"/><text x="83" y="154" text-anchor="middle" fill="#ffa596" font-size="16">search</text><rect x="157" y="128" width="126" height="42" rx="7" fill="none" stroke="#ff7d6b" stroke-dasharray="5 4" stroke-width="1.6"/><text x="220" y="154" text-anchor="middle" fill="#ffa596" font-size="16">worst case</text><rect x="294" y="128" width="126" height="42" rx="7" fill="none" stroke="#ff7d6b" stroke-dasharray="5 4" stroke-width="1.6"/><text x="357" y="154" text-anchor="middle" fill="#ffa596" font-size="16">proof</text>
-<text x="220" y="196" text-anchor="middle" fill="#ff7d6b" font-size="15">three copies that can drift apart</text></svg><figcaption>You can call it at one point. Searching over it, bounding it over every scene, or proving something about it each needs a separate copy written by hand.</figcaption></figure><figure class="vs-card ours"><h4>Lean: one row, read three ways</h4><svg viewBox="0 0 440 210" role="img" aria-label="Lean: one row is read by the solver, the verifier and the kernel.">
+<text x="220" y="196" text-anchor="middle" fill="#ff7d6b" font-size="15">three copies that can drift apart</text></svg><figcaption>A function you can only call at one point. Searching over it, bounding it over every scene, or proving something about it each needs a separate copy written by hand.</figcaption></figure><figure class="vs-card ours"><h4>Lean: verifiable physics</h4><svg viewBox="0 0 440 210" role="img" aria-label="Lean: one row is read by the solver, the verifier and the kernel.">
 <rect x="14" y="70" width="172" height="70" rx="8" fill="#060c15" stroke="#7df2cf" stroke-opacity=".6"/>
 <text x="28" y="98" class="m" font-size="15"><tspan fill="#b9a8ff">require</tspan><tspan fill="#ffb38a"> "hold"</tspan></text>
 <text x="28" y="122" class="m" font-size="15" fill="#edf1f6">2&#956;N &#8722; m(g+a) &#8805; 0</text>
@@ -423,9 +429,9 @@ inside the cone of half-angle `acos(cnum/cden)` around `dir`. -/
 <path d="M214,105 H244" fill="none" stroke="#7df2cf" stroke-width="2" marker-end="url(#vsg)"/>
 <path d="M214,105 V174 H244" fill="none" stroke="#7df2cf" stroke-width="2" marker-end="url(#vsg)"/>
 <rect x="250" y="13" width="176" height="46" rx="7" fill="rgba(125,242,207,.07)" stroke="#7df2cf" stroke-opacity=".55"/><text x="262" y="33" fill="#edf1f6" font-size="16" font-weight="600">Solver</text><text x="262" y="50" fill="#a6b1c0" font-size="14.5">searches for actions</text><rect x="250" y="82" width="176" height="46" rx="7" fill="rgba(125,242,207,.07)" stroke="#7df2cf" stroke-opacity=".55"/><text x="262" y="102" fill="#edf1f6" font-size="16" font-weight="600">Verifier</text><text x="262" y="119" fill="#a6b1c0" font-size="14.5">bounds every scene</text><rect x="250" y="151" width="176" height="46" rx="7" fill="rgba(125,242,207,.07)" stroke="#7df2cf" stroke-opacity=".55"/><text x="262" y="171" fill="#edf1f6" font-size="16" font-weight="600">Kernel</text><text x="262" y="188" fill="#a6b1c0" font-size="14.5">checks the proofs</text></svg><figcaption>The solver searches for actions that satisfy the row, the verifier bounds it over every scene in the belief box, and the Lean kernel checks the proofs about it.</figcaption></figure></div>
-<h4 class="vs-h">Three things a row in Lean gives you</h4>
-<div class="tablewrap"><table class="vs-tbl"><thead><tr><th></th><th>Python</th><th>Lean</th></tr></thead><tbody><tr><td><b>Cover every case</b></td><td>A test checks the values you ran; every other value stays unknown.</td><td class="lp">A theorem covers all of them: if the grip holds at acceleration <i>a</i>, it holds at every <i>a</i>&prime; &le; <i>a</i>.</td></tr><tr><td><b>Show that something is impossible</b></td><td>&ldquo;IK did not converge&rdquo;: a bad start, or truly unreachable? It cannot tell.</td><td class="lp">A proof that the target lies beyond the arm&rsquo;s reach <i>L</i>&#8321; + <i>L</i>&#8322; rules it out before any search.</td></tr><tr><td><b>Catch a model&rsquo;s mistake</b></td><td>The model writes <code>2*&mu;*N - m</code>, forgetting (<i>g</i> + <i>a</i>). It runs, and a plan goes to the robot.</td><td class="lp">Every quantity carries a unit, so a force minus a mass is rejected before anything runs.</td></tr></tbody></table></div>
-<p class="vs-note">Lean does not make the physics true: a wrong law or a wrong belief still gives a wrong plan. It makes what we wrote checked, consistent and used the same way everywhere.</p>
+<h4 class="vs-h">3 &middot; What &ldquo;verifiable&rdquo; adds</h4>
+<div class="tablewrap"><table class="vs-tbl"><thead><tr><th></th><th>Python as a calculator</th><th>Lean as verifiable physics</th></tr></thead><tbody><tr><td><b>Units</b>, one example</td><td>Plain floats: the model writes <code>2*&mu;*N - m</code>, a force minus a mass, and it runs.</td><td class="lp">Every quantity carries a unit, so the row is rejected before anything runs.</td></tr><tr><td><b>Every case</b></td><td>A test checks the values you ran; every other value stays unknown.</td><td class="lp">A theorem covers all of them: if the grip holds at acceleration <i>a</i>, it holds at every <i>a</i>&prime; &le; <i>a</i>.</td></tr><tr><td><b>Impossibility</b></td><td>&ldquo;IK did not converge&rdquo;: a bad start, or truly unreachable? It cannot tell.</td><td class="lp">A proof that the target lies beyond the arm&rsquo;s reach <i>L</i>&#8321; + <i>L</i>&#8322; rules it out before any search.</td></tr><tr><td><b>Could Python do it?</b></td><td>Yes, after adding dimension types, a language for theorems and a proof checker&hellip;</td><td class="lp">&hellip;which is what Lean already is, with a small trusted kernel. We use it rather than rebuild it.</td></tr></tbody></table></div>
+<p class="vs-note">Lean does not make the physics true: a wrong law or a wrong belief still gives a wrong plan. It makes what the agent wrote checked, consistent and used the same way everywhere.</p>
 </div>
 <div class="vs-pane" hidden>
 <p class="vs-q">&ldquo;Isn&rsquo;t this just inverse kinematics?&rdquo;</p>
